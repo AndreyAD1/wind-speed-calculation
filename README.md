@@ -1,4 +1,4 @@
-# Wind_Speed_Calculation
+# wind-speed-calculation
 
 Цель проекта
 ------------------------
