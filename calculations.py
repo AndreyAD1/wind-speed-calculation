@@ -1,10 +1,9 @@
-# Андрей Аракельянц. 19.12.2017
+# Андрей Аракельянц. 27.12.2017
 # Задача этой программы - по данным наблюдений с сайта rp5.ru рассчитать
 # скорость ветра заданной обеспеченности по каждому румбу.
 
 from pandas import *
 import numpy
-from scipy import interpolate
 
 
 # Из набора данных создаю сводную таблицу
@@ -51,6 +50,18 @@ def calm_processing(velocity_direction_table):
     return velocity_direction_table
 
 
+# делаю таблицу с повторяемостью градаций в каждом румбе (таблица 3.2)
+def recurrence_per_every_direction(velocity_direction_table):
+    for column in velocity_direction_table.columns:
+        cases_with_this_direction = velocity_direction_table.loc['All', column]
+        # количество случаев с этим направлением ветра
+        velocity_direction_table[column] = velocity_direction_table[
+            column] / cases_with_this_direction
+    # удаляю столбец "All", потому что он не нужен
+    velocity_direction_table = velocity_direction_table.drop(columns='All')
+    return velocity_direction_table
+
+
 # делаю таблицу с продолжительностью каждой градации по каждому
 # направлению (таблица 3.3)
 def speed_direction_duration(velocity_direction_table):
@@ -65,23 +76,45 @@ def speed_direction_duration(velocity_direction_table):
         velocity_direction_table.iloc[
             raw_index] += velocity_direction_table.iloc[raw_index + 1]
         raw_index -= 1
-    return velocity_direction_table
+    # заменяю название строки All на значение скорости ветра, который не
+    # наблюдался
+    max_observed_wind_velocity = velocity_direction_table.index[raw_number - 2]
+    velocity_direction_table_2 = velocity_direction_table.rename(
+        {'All': (max_observed_wind_velocity + 1)}, axis='index')
+    return velocity_direction_table_2
 
 
-# делаю таблицу с повторяемостью градаций в каждом румбе (таблица 3.2)
-def recurrence_per_every_direction(velocity_direction_table):
-        for column in velocity_direction_table.columns:
-        cases_with_this_direction = velocity_direction_table.loc[
-            'All', column]  # количество случаев с этим направлением ветра
-        velocity_direction_table[
-            column] = velocity_direction_table[column] / cases_with_this_direction
-    # удаляю столбец "All", потому что он не нужен
-    velocity_direction_table = velocity_direction_table.drop(columns='All')
-    return velocity_direction_table
+def linear_interpolation(F, velocity_direction_table, column_number):
+    raw_number = 0
+    wind_speed = 'error'
+    for f_value in velocity_direction_table.iloc[:, column_number]:
+        if F < f_value:
+            raw_number += 1
+            continue
+        elif F == f_value:
+            wind_speed = velocity_direction_table.index[raw_number]
+            break
+        elif F > f_value:
+            lower_wind_speed = velocity_direction_table.index[
+                raw_number - 1]
+            bigger_wind_speed = velocity_direction_table.index[raw_number]
+            lower_duration = velocity_direction_table.iloc[
+                raw_number - 1, column_number]
+            bigger_duration = f_value
+            # угловой коэффициент линейной функции
+            slope = (lower_wind_speed - bigger_wind_speed) / \
+                (lower_duration - bigger_duration)
+            # показатель ординаты линейной функции
+            ordinate_coefficient = (lower_duration * bigger_wind_speed -
+                                    bigger_duration * lower_wind_speed) / \
+                (lower_duration - bigger_duration)
+            wind_speed = slope * F + ordinate_coefficient
+            break
+    return wind_speed
 
 
 # вычисляем значение режимной функции F из формулы (3.1)
-def F_calculation(direction_recurrence, velocity_direction_table):
+def speed_calculation(direction_recurrence, velocity_direction_table):
     # продолжительность шторма всегда принимается равной 6 часам
     STORM_DURATION = 6
     # эмпирический коэффициент из формулы (3.1)
@@ -91,19 +124,17 @@ def F_calculation(direction_recurrence, velocity_direction_table):
     # нормативная повторяемость в годах. Должна задаваться пользователем
     STORM_RECURRENCE = 25
     # рассчитываем F для каждого направления ветра
-    output = []
+    wind_speed_list = []
     column_number = 0
-    print(velocity_direction_table.iloc[:, column_number])
     for direction_recurrence in direction_recurrence.loc['All']:
         F = COEF * STORM_DURATION / \
             (DAYS_NUMBER * STORM_RECURRENCE * direction_recurrence * 100)
-        # for f_value in velocity_direction_table.iloc[:, column_number]:
-        #     if F<f_value:
-        #         continue
-        #     elif F=f:
-        #         wind_speed = 
-        output.append(F)
-    return output
+        wind_velocity = linear_interpolation(
+            F, velocity_direction_table, column_number)
+        # print(wind_velocity)
+        wind_speed_list.append(wind_velocity)
+        column_number += 1
+    return wind_speed_list
 
 
 # создаю сводную таблицу
@@ -117,13 +148,15 @@ velocity_direction_table = calm_processing(velocity_direction_table)
 OBSERVATIONS_NUMBER_POSITION = 1
 observations_number = create_pivot_table_result[OBSERVATIONS_NUMBER_POSITION]
 direction_recurrence = velocity_direction_table / observations_number
+direction_recurrence = direction_recurrence.drop(columns='All')
 # делаю таблицу с повторяемостью градаций в каждом румбе (таблица 3.2)
-velocity_direction_table = recurrence_per_every_direction(velocity_direction_table)
+velocity_direction_table = recurrence_per_every_direction(
+    velocity_direction_table)
 # делаю таблицу с продолжительностью каждой градации по каждому
 # направлению (таблица 3.3)
 velocity_direction_table = speed_direction_duration(velocity_direction_table)
 # эта таблица содержит координаты режимных функций ветра (рисунок 1)
 print(velocity_direction_table)
 # рассчитываем значение режимной функции для каждого направления ветра
-output = F_calculation(direction_recurrence, velocity_direction_table)
+output = speed_calculation(direction_recurrence, velocity_direction_table)
 print(output)

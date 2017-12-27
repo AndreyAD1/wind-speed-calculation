@@ -1,8 +1,5 @@
-requests
-cffi==1.11.2
 numpy==1.13.3
 pandas==0.21.1
-pycparser==2.18
 python-dateutil==2.6.1
 pytz==2017.3
 six==1.11.0
