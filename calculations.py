@@ -7,6 +7,7 @@ import numpy
 from scipy import interpolate
 
 
+# Из набора данных создаю сводную таблицу
 def create_pivot_table():
     full_observation_data = read_csv('example.csv', sep=';', header=6)
     # убираю всё лишнее из данных. Оставляю только два нужных мне столбца со
@@ -27,6 +28,7 @@ def create_pivot_table():
     return [velocity_direction_table_2, observations_number]
 
 
+# Обрабатываю случаи штилей
 def calm_processing(velocity_direction_table):
     # Нужно распределить штили равномерно по всем направлениями ветра.
     # количество колонок в таблице
@@ -49,6 +51,8 @@ def calm_processing(velocity_direction_table):
     return velocity_direction_table
 
 
+# делаю таблицу с продолжительностью каждой градации по каждому
+# направлению (таблица 3.3)
 def speed_direction_duration(velocity_direction_table):
     # рассчитываю количество строк в таблице
     raw_number = len(velocity_direction_table.iloc[:, 1])
@@ -64,8 +68,20 @@ def speed_direction_duration(velocity_direction_table):
     return velocity_direction_table
 
 
+# делаю таблицу с повторяемостью градаций в каждом румбе (таблица 3.2)
+def recurrence_per_every_direction(velocity_direction_table):
+        for column in velocity_direction_table.columns:
+        cases_with_this_direction = velocity_direction_table.loc[
+            'All', column]  # количество случаев с этим направлением ветра
+        velocity_direction_table[
+            column] = velocity_direction_table[column] / cases_with_this_direction
+    # удаляю столбец "All", потому что он не нужен
+    velocity_direction_table = velocity_direction_table.drop(columns='All')
+    return velocity_direction_table
+
+
+# вычисляем значение режимной функции F из формулы (3.1)
 def F_calculation(direction_recurrence, velocity_direction_table):
-    # вычисляем значение режимной функции F из формулы (3.1)
     # продолжительность шторма всегда принимается равной 6 часам
     STORM_DURATION = 6
     # эмпирический коэффициент из формулы (3.1)
@@ -102,19 +118,11 @@ OBSERVATIONS_NUMBER_POSITION = 1
 observations_number = create_pivot_table_result[OBSERVATIONS_NUMBER_POSITION]
 direction_recurrence = velocity_direction_table / observations_number
 # делаю таблицу с повторяемостью градаций в каждом румбе (таблица 3.2)
-for column in velocity_direction_table.columns:
-    cases_with_this_direction = velocity_direction_table.loc[
-        'All', column]  # количество случаев с этим направлением ветра
-    velocity_direction_table[
-        column] = velocity_direction_table[column] / cases_with_this_direction
-
-# удаляю столбец "All", потому что он не нужен
-velocity_direction_table = velocity_direction_table.drop(columns='All')
-
+velocity_direction_table = recurrence_per_every_direction(velocity_direction_table)
 # делаю таблицу с продолжительностью каждой градации по каждому
 # направлению (таблица 3.3)
 velocity_direction_table = speed_direction_duration(velocity_direction_table)
-# эта таблица сожержит координаты режимных функций ветра (рисунок 1)
+# эта таблица содержит координаты режимных функций ветра (рисунок 1)
 print(velocity_direction_table)
 # рассчитываем значение режимной функции для каждого направления ветра
 output = F_calculation(direction_recurrence, velocity_direction_table)
