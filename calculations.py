@@ -128,7 +128,8 @@ def linear_interpolation(F, velocity_direction_table, column_number):
     return wind_speed
 
 
-# вычисляем значение режимной функции F из формулы (3.1)
+# вычисляем значение режимной функции F по формуле (3.1) и рассчитываю
+# скорость ветра
 def speed_calculation(direction_recurrence, velocity_direction_table):
     # продолжительность шторма всегда принимается равной 6 часам
     STORM_DURATION = 6
