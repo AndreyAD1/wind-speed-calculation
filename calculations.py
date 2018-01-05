@@ -84,30 +84,45 @@ def speed_direction_duration(velocity_direction_table):
     return velocity_direction_table_2
 
 
+# вычисляю скорость ветра по значению режимной функции
 def linear_interpolation(F, velocity_direction_table, column_number):
     raw_number = 0
     wind_speed = 'error'
+    # перебираю сверху вниз каждую строку в одном из столбцов таблицы 3.3
     for f_value in velocity_direction_table.iloc[:, column_number]:
+        # если значение режимной функции меньше значения в данной строке, то
+        # спускаюсь на 1 строку вниз
         if F < f_value:
             raw_number += 1
             continue
+        # если значение режимной функции равно значению в данной строке, то
+        # название данной строки - это и есть скорость ветра, которую мы ищем
         elif F == f_value:
             wind_speed = velocity_direction_table.index[raw_number]
             break
+        # если значение режимной функции больше значения в данной строке, то
+        # нужная нам скорость равна значению, расположенному в интервале между названием
+        # данной строки и названием предыдущей строки.
+        # вычисляю нужную нам скорость ветра, линейно интерполируя между
+        # строками таблицы 3.3
         elif F > f_value:
+            # название предыдущей строки
             lower_wind_speed = velocity_direction_table.index[
                 raw_number - 1]
+            # название данной строки
             bigger_wind_speed = velocity_direction_table.index[raw_number]
             lower_duration = velocity_direction_table.iloc[
                 raw_number - 1, column_number]
             bigger_duration = f_value
-            # угловой коэффициент линейной функции
+            # вычисляю угловой коэффициент уравнения прямой
             slope = (lower_wind_speed - bigger_wind_speed) / \
                 (lower_duration - bigger_duration)
-            # показатель ординаты линейной функции
+            # вычисляю показатель ординаты уравнения прямой
             ordinate_coefficient = (lower_duration * bigger_wind_speed -
                                     bigger_duration * lower_wind_speed) / \
                 (lower_duration - bigger_duration)
+            # подставляю значение режимной функции в уравнение прямой и получаю
+            # нужную нам скорость ветра
             wind_speed = slope * F + ordinate_coefficient
             break
     return wind_speed
@@ -126,12 +141,15 @@ def speed_calculation(direction_recurrence, velocity_direction_table):
     # рассчитываем F для каждого направления ветра
     wind_speed_list = []
     column_number = 0
+    # перебираю каждый столбец таблицы 3.3, то есть каждое направление ветра
     for direction_recurrence in direction_recurrence.loc['All']:
+        # рассчитываю значение режимной функции по формуле 3.1
         F = COEF * STORM_DURATION / \
             (DAYS_NUMBER * STORM_RECURRENCE * direction_recurrence * 100)
+        # вычисляю скорость ветра по значению режимной функции, линейно
+        # интерполируя между строками таблицы 3.3
         wind_velocity = linear_interpolation(
             F, velocity_direction_table, column_number)
-        # print(wind_velocity)
         wind_speed_list.append(wind_velocity)
         column_number += 1
     return wind_speed_list
