@@ -3,6 +3,7 @@
 # скорость ветра заданной обеспеченности по каждому румбу.
 
 from pandas import *
+import matplotlib.pyplot as plt
 import numpy
 
 
@@ -156,6 +157,17 @@ def speed_calculation(direction_recurrence, velocity_direction_table):
     return wind_speed_list
 
 
+# создаю график режимных скоростей ветра
+def figure_plotting(velocity_direction_table):
+    # данные по оси скоростей
+    velocity_axis = velocity_direction_table.index.values
+    for direction in velocity_direction_table.columns:
+        # данные по оси продолжительностей
+        duration_axis = velocity_direction_table[direction].values
+        # создаю линию на рисунке
+        plt.plot(velocity_axis, duration_axis)
+    plt.show()
+
 # создаю сводную таблицу
 create_pivot_table_result = create_pivot_table()
 # обрабатываю штили
@@ -176,6 +188,8 @@ velocity_direction_table = recurrence_per_every_direction(
 velocity_direction_table = speed_direction_duration(velocity_direction_table)
 # эта таблица содержит координаты режимных функций ветра (рисунок 1)
 print(velocity_direction_table)
+# делаю рисунок режимных функций ветра по каждому направлению (рисунок 1)
+figure_plotting(velocity_direction_table)
 # рассчитываем значение режимной функции для каждого направления ветра
 output = speed_calculation(direction_recurrence, velocity_direction_table)
 print(output)
