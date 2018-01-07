@@ -159,13 +159,23 @@ def speed_calculation(direction_recurrence, velocity_direction_table):
 
 # создаю график режимных скоростей ветра
 def figure_plotting(velocity_direction_table):
-    # данные по оси скоростей
+    # значения функций по оси скоростей
     velocity_axis = velocity_direction_table.index.values
+    figure = plt.figure()
+    # создаю две пары осей: слева и справа
+    left_graphs = figure.add_subplot(1, 2, 1)
+    right_graphs = figure.add_subplot(1, 2, 2)
+    graph_number = 0
     for direction in velocity_direction_table.columns:
-        # данные по оси продолжительностей
+        graph_number += 1
+        # значения функций по оси продолжительностей
         duration_axis = velocity_direction_table[direction].values
-        # создаю линию на рисунке
-        plt.plot(velocity_axis, duration_axis)
+        # рисую график на левых осях. Если графиков на левых осях становится
+        # больше 8, то рисую графики на правых осях
+        if graph_number <= 8:
+            left_graphs.plot(velocity_axis, duration_axis)
+        else:
+            right_graphs.plot(velocity_axis, duration_axis)
     plt.show()
 
 # создаю сводную таблицу
