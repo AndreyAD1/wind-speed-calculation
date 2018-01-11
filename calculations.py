@@ -4,6 +4,7 @@
 
 from pandas import *
 import matplotlib.pyplot as plt
+import matplotlib.ticker as tick
 import numpy
 
 
@@ -176,6 +177,24 @@ def figure_plotting(velocity_direction_table):
             left_graphs.plot(velocity_axis, duration_axis)
         else:
             right_graphs.plot(velocity_axis, duration_axis)
+    # делаю вертикальную ось логарифмической
+    left_graphs.set_yscale('symlog', linthreshy=0.001)
+    right_graphs.set_yscale('symlog', linthreshy=0.001)
+    # вывожу рисочки по вертикальной оси
+    y_labels = numpy.geomspace(0.002, 1.024, 9)
+    left_graphs.set_yticks(y_labels)
+    right_graphs.set_yticks(y_labels)
+    # меняю формат подписей
+    left_graphs.yaxis.set_major_formatter(tick.ScalarFormatter())
+    right_graphs.yaxis.set_major_formatter(tick.ScalarFormatter())   
+    # настраиваю максимальные и минимальные значения осей
+    MINIMAL_X = 0
+    MAXIMAL_X = velocity_axis.max()
+    MINIMAL_Y = 0.01
+    MAXIMAL_Y = 0.5
+    left_graphs.axis([MINIMAL_X, MAXIMAL_X, MAXIMAL_Y, MINIMAL_Y])
+    right_graphs.axis([MINIMAL_X, MAXIMAL_X, MAXIMAL_Y, MINIMAL_Y])
+
     plt.show()
 
 # создаю сводную таблицу
