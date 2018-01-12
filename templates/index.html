@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -34,7 +34,9 @@
         })
         .on( "change", function() {
             from.datepicker( "option", "maxDate", getDate( this ) );
-        });
+        }),
+        month = $( "#month" )
+        ;
 
         function getDate( element ) {
             var date;
@@ -50,12 +52,28 @@
     </script>
 </head>
 <body>
-
-    <p><b>Select a date from calendar:</b></p>
-    <label for="from">From</label>
+    <p><b>Введите идентификатор метеостанции:</b></p>
+    <p>ID: <input type="text" id="weather_station" name="weather_station"></p>
+    <p><b>Данные за период:</b></p>
+    <label for="from">С</label>
     <input type="text" id="from" name="from">
-    <label for="to">to</label>
+    <label for="to">по</label>
     <input type="text" id="to" name="to">
-
+    <p><b>Данные за:</b></p>
+    <select>
+        <option>все дни в периоде</option>
+        <option>Январь</option>
+        <option>Февраль</option>
+        <option>Март</option>
+        <option>Апрель</option>
+        <option>Май</option>
+        <option>Июнь</option>
+        <option>Июль</option>
+        <option>Август</option>
+        <option>Сентябрь</option>
+        <option>Октябрь</option>
+        <option>Ноябрь</option>
+        <option>Декабрь</option>
+    </select>
 </body>
 </html>
