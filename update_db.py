@@ -1,27 +1,28 @@
 import datetime
 
-from database import db_session, Meteostation, Wind
+from database import db_session, WeatherStation, WindIndicator
 from weather import get_weather
 
 
 def update_meteostation(station_id, start_date, end_date):
     weather_data = get_weather(station_id, start_date, end_date)
     # ищем метеостанцию в таблице
-    station = Meteostation.query.get(station_id)
+    station = WeatherStation.query.get(station_id)
     if station is None:
         # если не нашли такую станцию, добавляем ее в таблицу
-        station = Meteostation(station_id)
+        station = WeatherStation(station_id)
         db_session.add(station)
     for row in weather_data:
-        localdate = datetime.datetime.strptime(
+        local_date = datetime.datetime.strptime(
             row['Localdate'], '%d.%m.%Y %H:%M')
         wind_speed = int(row['U'])
         wind_direction = row['DD']
         # ищем комбо даты и id станции
-        wind = Wind.query.get((localdate, station.id))
+        wind = WindIndicator.query.get((local_date, station.id))
         if wind is None:
             # если не нашли такое комбо, добавляем в таблицу
-            wind = Wind(localdate, wind_speed, wind_direction, station.id)
+            wind = WindIndicator(
+                local_date, wind_speed, wind_direction, station.id)
             db_session.add(wind)
     db_session.commit()
 

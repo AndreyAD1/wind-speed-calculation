@@ -1,11 +1,3 @@
-#! /usr/bin/env python
-# Зачем здесь это? Вы планируете использовать второй питон? Он через 2 года перестает поддерживаться
-# https://pythonclock.org/
-# -*- coding: utf-8 -*-
-
-# from sqlalchemy import create_engine, Column, Integer, String, Text, \
-#     DateTime, ForeignKey
-# Чище сделать вот так
 from sqlalchemy import (
     create_engine, Column, Integer, String, Text,
     DateTime, ForeignKey
@@ -19,26 +11,24 @@ Base = declarative_base()
 Base.query = db_session.query_property()
 
 
-# class Meteostation(Base):
-# Лучше использовать английские слова в названиях классов, мне PyCharm здесь показывает ошибку, т.к. не знает
-# слова Meteostation
 class WeatherStation(Base):
     __tablename__ = 'weather_stations'
     # Почему id строка?
+    # В качестве id тут - идентификатор метеостанции, и нет уверенности
+    # что это всегда int, а не комбо чисел и букв, например
     id = Column(String(), primary_key=True)
-    winds = relationship('Wind', backref='weather_station')
+    winds = relationship('WindIndicator', backref='weather_station')
 
-    # Зачем это?
-    def __init__(self, id=None):
+    # конструктор класса WeatherStation
+    def __init__(self, id):
         self.id = id
 
 
-# Не совсем понятное название класса
-class Wind(Base):
-    __tablename__ = 'wind'
-    # localdate = Column(DateTime, primary_key=True)
-    # Опять PyCharm подсветил ошибку, т.к. не знает английского слова localdate
+class WindIndicator(Base):
+    __tablename__ = 'wind_indicators'
     # Хорошо бы и для этой таблицы добавить поле id
+    # не вижу смысла в синтетическом ключе,
+    # т.к. PK тут - комбинация local_date и weather_station_id
     local_date = Column(DateTime, primary_key=True)
     wind_speed = Column(Integer, nullable=False)
     wind_direction = Column(Text)
@@ -48,16 +38,19 @@ class Wind(Base):
         primary_key=True
     )
 
-    # Зачем это?
+    # конструктор класса WindIndicators
     def __init__(self,
-                 localdate=None, wind_speed=None,
-                 wind_direction=None, meteo_id=None):
-        self.localdate = localdate
+                 local_date, wind_speed,
+                 wind_direction, weather_station_id):
+        self.local_date = local_date
         self.wind_speed = wind_speed
         self.wind_direction = wind_direction
-        self.meteo_id = meteo_id
+        self.weather_station_id = weather_station_id
+
+
+def create_db():
+    Base.metadata.create_all(bind=engine)
 
 
 if __name__ == "__main__":
-    # Явнее будет вынести это в какую-то отдельную функцию, например create_database
-    Base.metadata.create_all(bind=engine)
+    create_db()
