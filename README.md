@@ -27,3 +27,5 @@
 Выходные данные
 ----------------
 16 скоростей ветра (м/с) по 16 направлениям ветра.
+
+Пример расчёта: https://github.com/AndreyAD1/Wind_Speed_Calculation/files/1555728/default.pdf
