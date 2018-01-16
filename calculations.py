@@ -4,7 +4,7 @@
 
 from pandas import *
 import matplotlib.pyplot as plt
-import matplotlib.ticker as tick
+import matplotlib.ticker as ticker
 import numpy
 
 
@@ -177,25 +177,31 @@ def figure_plotting(velocity_direction_table):
             left_graphs.plot(velocity_axis, duration_axis)
         else:
             right_graphs.plot(velocity_axis, duration_axis)
-    # делаю вертикальную ось логарифмической
-    left_graphs.set_yscale('symlog', linthreshy=0.001)
-    right_graphs.set_yscale('symlog', linthreshy=0.001)
-    # вывожу рисочки по вертикальной оси
-    y_labels = numpy.geomspace(0.002, 1.024, 9)
-    left_graphs.set_yticks(y_labels)
-    right_graphs.set_yticks(y_labels)
-    # меняю формат подписей
-    left_graphs.yaxis.set_major_formatter(tick.ScalarFormatter())
-    right_graphs.yaxis.set_major_formatter(tick.ScalarFormatter())   
-    # настраиваю максимальные и минимальные значения осей
+    # создаю подписи для делений по вертикальной оси
+    MINIMAL_TICK = 0.02
+    MAXIMAL_TICK = 52.4288
+    TICKS_NUMBER = 12
+    y_labels = numpy.geomspace(MINIMAL_TICK, MAXIMAL_TICK, TICKS_NUMBER)
+    # назначаю максимальные и минимальные значения по обеим осям
     MINIMAL_X = 0
     MAXIMAL_X = velocity_axis.max()
     MINIMAL_Y = 0.01
-    MAXIMAL_Y = 0.5
-    left_graphs.axis([MINIMAL_X, MAXIMAL_X, MAXIMAL_Y, MINIMAL_Y])
-    right_graphs.axis([MINIMAL_X, MAXIMAL_X, MAXIMAL_Y, MINIMAL_Y])
+    MAXIMAL_Y = 60
+    # оформляю сначала левый, а потом правый рисунок
+    for picture in [left_graphs, right_graphs]:
+        # делаю вертикальную ось логарифмической
+        picture.set_yscale('symlog', linthreshy=0.001)
+        # создаю деления по вертикальной оси
+        picture.set_yticks(y_labels)
+        # меняю формат подписей делений
+        picture.yaxis.set_major_formatter(ticker.ScalarFormatter()) 
+        # настраиваю максимальные и минимальные значения осей
+        picture.axis([MINIMAL_X, MAXIMAL_X, MAXIMAL_Y, MINIMAL_Y])
 
-    plt.show()
+    # немного увеличиваю расстояние между левым и правым рисунком
+    plt.tight_layout(w_pad = -0.2)
+    # plt.show()
+    plt.savefig('picture.png', format='png')
 
 # создаю сводную таблицу
 create_pivot_table_result = create_pivot_table()
@@ -209,9 +215,10 @@ OBSERVATIONS_NUMBER_POSITION = 1
 observations_number = create_pivot_table_result[OBSERVATIONS_NUMBER_POSITION]
 direction_recurrence = velocity_direction_table / observations_number
 direction_recurrence = direction_recurrence.drop(columns='All')
-# делаю таблицу с повторяемостью градаций в каждом румбе (таблица 3.2)
+# делаю таблицу с повторяемостью градаций в каждом румбе в процентах (таблица 3.2)
+PER_CENT = 100
 velocity_direction_table = recurrence_per_every_direction(
-    velocity_direction_table)
+    velocity_direction_table) * PER_CENT
 # делаю таблицу с продолжительностью каждой градации по каждому
 # направлению (таблица 3.3)
 velocity_direction_table = speed_direction_duration(velocity_direction_table)
