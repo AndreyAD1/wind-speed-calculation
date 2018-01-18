@@ -226,6 +226,6 @@ velocity_direction_table = speed_direction_duration(velocity_direction_table)
 print(velocity_direction_table)
 # делаю рисунок режимных функций ветра по каждому направлению (рисунок 1)
 figure_plotting(velocity_direction_table)
-# рассчитываем значение режимной функции для каждого направления ветра
+# рассчитываю значение режимной функции для каждого направления ветра
 output = speed_calculation(direction_recurrence, velocity_direction_table)
 print(output)
