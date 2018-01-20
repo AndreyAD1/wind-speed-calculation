@@ -53,7 +53,7 @@ def load_weather_data(station_id, start_date, end_date):
     for row in weather_data:
         local_date = datetime.datetime.strptime(
             row['Localdate'], '%d.%m.%Y %H:%M')
-        wind_speed = int(row['U'])
+        wind_speed = int(row['Ff'])
         wind_direction = row['DD']
         wind = WindIndicator.query.get((local_date, station.id))
         if wind is None:
