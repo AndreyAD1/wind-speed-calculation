@@ -15,7 +15,7 @@ def update_meteostation(station_id, start_date, end_date):
     for row in weather_data:
         local_date = datetime.datetime.strptime(
             row['Localdate'], '%d.%m.%Y %H:%M')
-        wind_speed = int(row['U'])
+        wind_speed = int(row['Ff'])
         wind_direction = row['DD']
         # ищем комбо даты и id станции
         wind = WindIndicator.query.get((local_date, station.id))

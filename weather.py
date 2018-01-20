@@ -98,4 +98,4 @@ def get_weather(station_id, start_date, end_date, month=None):
 
 if __name__ == "__main__":
     weather_data = get_weather('27612', '16.12.2017', '18.12.2017')
-    print(weather_data)
+    print(weather_data[:100])
