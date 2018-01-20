@@ -3,6 +3,7 @@
 # скорость ветра заданной обеспеченности по каждому румбу.
 
 from pandas import *
+from database import WindIndicator, WeatherStation
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy
@@ -10,6 +11,11 @@ import numpy
 
 # Из набора данных создаю сводную таблицу
 def create_pivot_table():
+    observation_data = WindIndicator
+    # observation_data = WeatherStation
+    print(observation_data)
+    u = observation_data.query.all()
+    print(u)
     full_observation_data = read_csv('example.csv', sep=';', header=6)
     # убираю всё лишнее из данных. Оставляю только два нужных мне столбца со
     # скоростью и направлением ветра: 'DD' и 'U' соответственно
@@ -19,7 +25,7 @@ def create_pivot_table():
     required_data_2 = required_data.assign(DD2=required_data['DD'])
     # расчитываю общее количество наблюдений
     observations_number = len(required_data_2.index)
-    # создаю сводную таблицу с количеством наблюдений по каждому сочетанию
+    # создаю сводную таблицу с количеством наблю.дений по каждому сочетанию
     # скорости-направления ветра (в дальнейшем называю это сочетание словом
     # "градация"). Строки таблицы - скорость ветра. Столбцы таблицы - направление ветра.
     velocity_direction_table = pandas.pivot_table(
@@ -37,7 +43,7 @@ def calm_processing(velocity_direction_table):
     # количество штилей
     calm_cases = velocity_direction_table.loc[0, 'Штиль, безветрие']
     # количество штилей, равномерно распределённое по всем направлениями ветра
-    calm_cases_per_each_direction = calm_cases / (column_number - 1)
+    calm_cases_per_each_direction = calm_cases / (column_number - 2)
     # записываю в каждый столбец строчки "0" количество штилей, распределённое
     # по направлениям
     velocity_direction_table.loc[0] = calm_cases_per_each_direction
@@ -148,11 +154,12 @@ def speed_calculation(direction_recurrence, velocity_direction_table):
     for direction_recurrence in direction_recurrence.loc['All']:
         # рассчитываю значение режимной функции по формуле 3.1
         F = COEF * STORM_DURATION / \
-            (DAYS_NUMBER * STORM_RECURRENCE * direction_recurrence * 100)
+            (DAYS_NUMBER * STORM_RECURRENCE * direction_recurrence)
         # вычисляю скорость ветра по значению режимной функции, линейно
         # интерполируя между строками таблицы 3.3
         wind_velocity = linear_interpolation(
             F, velocity_direction_table, column_number)
+        wind_speed_list.append(velocity_direction_table.columns[column_number])
         wind_speed_list.append(wind_velocity)
         column_number += 1
     return wind_speed_list
@@ -174,13 +181,13 @@ def figure_plotting(velocity_direction_table):
         # рисую график на левых осях. Если графиков на левых осях становится
         # больше 8, то рисую графики на правых осях
         if graph_number <= 8:
-            left_graphs.plot(velocity_axis, duration_axis)
+            left_graphs.plot(velocity_axis, duration_axis, label=graph_number)
         else:
-            right_graphs.plot(velocity_axis, duration_axis)
+            right_graphs.plot(velocity_axis, duration_axis, label=graph_number)
     # создаю подписи для делений по вертикальной оси
-    MINIMAL_TICK = 0.02
-    MAXIMAL_TICK = 52.4288
-    TICKS_NUMBER = 12
+    MINIMAL_TICK = 0.2
+    MAXIMAL_TICK = 50
+    TICKS_NUMBER = 9
     y_labels = numpy.geomspace(MINIMAL_TICK, MAXIMAL_TICK, TICKS_NUMBER)
     # назначаю максимальные и минимальные значения по обеим осям
     MINIMAL_X = 0
@@ -190,30 +197,34 @@ def figure_plotting(velocity_direction_table):
     # оформляю сначала левый, а потом правый рисунок
     for picture in [left_graphs, right_graphs]:
         # делаю вертикальную ось логарифмической
-        picture.set_yscale('symlog', linthreshy=0.001)
+        picture.set_yscale('symlog', linthreshy=5)
         # создаю деления по вертикальной оси
         picture.set_yticks(y_labels)
         # меняю формат подписей делений
         picture.yaxis.set_major_formatter(ticker.ScalarFormatter()) 
         # настраиваю максимальные и минимальные значения осей
         picture.axis([MINIMAL_X, MAXIMAL_X, MAXIMAL_Y, MINIMAL_Y])
+        # делаю легенду
+        picture.legend()
 
     # немного увеличиваю расстояние между левым и правым рисунком
     plt.tight_layout(w_pad = -0.2)
     # plt.show()
-    plt.savefig('picture.png', format='png')
+    plt.savefig('picture.png', format='png', dpi=400)
 
 # создаю сводную таблицу
 create_pivot_table_result = create_pivot_table()
 # обрабатываю штили
 PIVOT_TABLE_POSITION = 0
 velocity_direction_table = create_pivot_table_result[PIVOT_TABLE_POSITION]
+# print(velocity_direction_table)
 velocity_direction_table = calm_processing(velocity_direction_table)
 # делаю таблицу с повторяемостью градаций от общего числа всех наблюдений
 # (таблица 3.1)
 OBSERVATIONS_NUMBER_POSITION = 1
 observations_number = create_pivot_table_result[OBSERVATIONS_NUMBER_POSITION]
-direction_recurrence = velocity_direction_table / observations_number
+# direction_recurrence = velocity_direction_table / velocity_direction_table.loc['All', 'All']
+direction_recurrence = velocity_direction_table / create_pivot_table_result[OBSERVATIONS_NUMBER_POSITION]
 direction_recurrence = direction_recurrence.drop(columns='All')
 # делаю таблицу с повторяемостью градаций в каждом румбе в процентах (таблица 3.2)
 PER_CENT = 100
