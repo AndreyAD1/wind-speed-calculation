@@ -3,54 +3,63 @@
 # скорость ветра заданной обеспеченности по каждому румбу.
 
 from pandas import *
-from database import WindIndicator, WeatherStation
+# from database import WindIndicator, WeatherStation
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy
 
 
 # Из набора данных создаю сводную таблицу
+# TODO maybe not create but get
 def create_pivot_table():
-    observation_data = WindIndicator
+    # observation_data = WindIndicator
     # observation_data = WeatherStation
-    print(observation_data)
-    u = observation_data.query.all()
-    print(u)
+    # print(observation_data)
+    # u = observation_data.query.all()
+    # print(u)
+    # TODO move example.csv to function argument
     full_observation_data = read_csv('example.csv', sep=';', header=6)
     # убираю всё лишнее из данных. Оставляю только два нужных мне столбца со
     # скоростью и направлением ветра: 'DD' и 'U' соответственно
     required_data = full_observation_data.loc[:, ['U', 'DD']]
     # добавляю вспомогательный столбец, который нужен для создания сводной
     # таблицы
+    # TODO убрать костыль required_data_2
+    # TODO 'DD', 'U' to constants
     required_data_2 = required_data.assign(DD2=required_data['DD'])
     # расчитываю общее количество наблюдений
     observations_number = len(required_data_2.index)
     # создаю сводную таблицу с количеством наблю.дений по каждому сочетанию
     # скорости-направления ветра (в дальнейшем называю это сочетание словом
     # "градация"). Строки таблицы - скорость ветра. Столбцы таблицы - направление ветра.
+    # "градация"). Строки таблицы - скорость ветра. Столбцы таблицы - направление ветра.
+    # TODO no need to create velocity_direction_table_2, find the way
     velocity_direction_table = pandas.pivot_table(
         required_data_2, index='DD', values='DD2', columns='U', margins=True, aggfunc=numpy.size)
     # во всех ячейках без значений ставлю нули
     velocity_direction_table_2 = velocity_direction_table.fillna(value=0)
-    return [velocity_direction_table_2, observations_number]
+    # TODO find way to count lines of result table, no need to observations_number
+    return velocity_direction_table_2, observations_number
 
 
 # Обрабатываю случаи штилей
+# TODO rename to process_calm_cases
 def calm_processing(velocity_direction_table):
     # Нужно распределить штили равномерно по всем направлениями ветра.
     # количество колонок в таблице
     column_number = len(velocity_direction_table.columns)
     # количество штилей
+    # TODO 'Штиль, безветрие' to constants
     calm_cases = velocity_direction_table.loc[0, 'Штиль, безветрие']
     # количество штилей, равномерно распределённое по всем направлениями ветра
+    # TODO comment why exactly - 2
     calm_cases_per_each_direction = calm_cases / (column_number - 2)
     # записываю в каждый столбец строчки "0" количество штилей, распределённое
     # по направлениям
     velocity_direction_table.loc[0] = calm_cases_per_each_direction
     # прибавляю в строку "All" каждой таблицы количество штилей,
     # распределённое по направлениям
-    velocity_direction_table.loc['All'] = velocity_direction_table.loc[
-        'All'] + calm_cases_per_each_direction
+    velocity_direction_table.loc['All'] = velocity_direction_table.loc['All'] + calm_cases_per_each_direction
     # Задача выполнена. Штили распределены равномерно по всем направлениям ветра.
     # удаляю столбец "Штиль, безветрие", потому что он не нужен
     velocity_direction_table = velocity_direction_table.drop(
@@ -59,12 +68,12 @@ def calm_processing(velocity_direction_table):
 
 
 # делаю таблицу с повторяемостью градаций в каждом румбе (таблица 3.2)
+# TODO rename function to verb name
 def recurrence_per_every_direction(velocity_direction_table):
     for column in velocity_direction_table.columns:
         cases_with_this_direction = velocity_direction_table.loc['All', column]
         # количество случаев с этим направлением ветра
-        velocity_direction_table[column] = velocity_direction_table[
-            column] / cases_with_this_direction
+        velocity_direction_table[column] = velocity_direction_table[column] / cases_with_this_direction
     # удаляю столбец "All", потому что он не нужен
     velocity_direction_table = velocity_direction_table.drop(columns='All')
     return velocity_direction_table
@@ -72,27 +81,34 @@ def recurrence_per_every_direction(velocity_direction_table):
 
 # делаю таблицу с продолжительностью каждой градации по каждому
 # направлению (таблица 3.3)
+# TODO rename function to verb name
 def speed_direction_duration(velocity_direction_table):
     # рассчитываю количество строк в таблице
+    # TODO not raw, but row
     raw_number = len(velocity_direction_table.iloc[:, 1])
     # обнуляю самую нижнюю строку таблицы
+    # TODO fix scenario with row_number = 0
     velocity_direction_table.iloc[raw_number - 1] = 0
+    # TODO fix scenario with row_number = 0
     raw_index = raw_number - 2
     # делаю таблицу с продолжительностью каждой градации по каждому
     # направлению (таблица 3.3)
     while raw_index != -1:
-        velocity_direction_table.iloc[
-            raw_index] += velocity_direction_table.iloc[raw_index + 1]
+        velocity_direction_table.iloc[raw_index] += velocity_direction_table.iloc[raw_index + 1]
         raw_index -= 1
     # заменяю название строки All на значение скорости ветра, который не
     # наблюдался
     max_observed_wind_velocity = velocity_direction_table.index[raw_number - 2]
+    # TODO variable with _2 in name is BAD, maybe you can just
+    # TODO velocity_direction_table.rename({'All': (max_observed_wind_velocity + 1)}, axis='index')
     velocity_direction_table_2 = velocity_direction_table.rename(
         {'All': (max_observed_wind_velocity + 1)}, axis='index')
     return velocity_direction_table_2
 
 
 # вычисляю скорость ветра по значению режимной функции
+# TODO rename F to f_big
+# TODO rename function to verb name
 def linear_interpolation(F, velocity_direction_table, column_number):
     raw_number = 0
     wind_speed = 'error'
@@ -115,16 +131,14 @@ def linear_interpolation(F, velocity_direction_table, column_number):
         # строками таблицы 3.3
         elif F > f_value:
             # название предыдущей строки
-            lower_wind_speed = velocity_direction_table.index[
-                raw_number - 1]
+            lower_wind_speed = velocity_direction_table.index[raw_number - 1]
             # название данной строки
             bigger_wind_speed = velocity_direction_table.index[raw_number]
             lower_duration = velocity_direction_table.iloc[
                 raw_number - 1, column_number]
             bigger_duration = f_value
             # вычисляю угловой коэффициент уравнения прямой
-            slope = (lower_wind_speed - bigger_wind_speed) / \
-                (lower_duration - bigger_duration)
+            slope = (lower_wind_speed - bigger_wind_speed) / (lower_duration - bigger_duration)
             # вычисляю показатель ординаты уравнения прямой
             ordinate_coefficient = (lower_duration * bigger_wind_speed -
                                     bigger_duration * lower_wind_speed) / \
@@ -139,6 +153,7 @@ def linear_interpolation(F, velocity_direction_table, column_number):
 # вычисляем значение режимной функции F по формуле (3.1) и рассчитываю
 # скорость ветра
 def speed_calculation(direction_recurrence, velocity_direction_table):
+    # TODO move to file beginning
     # продолжительность шторма всегда принимается равной 6 часам
     STORM_DURATION = 6
     # эмпирический коэффициент из формулы (3.1)
@@ -212,31 +227,35 @@ def figure_plotting(velocity_direction_table):
     # plt.show()
     plt.savefig('picture.png', format='png', dpi=400)
 
-# создаю сводную таблицу
-create_pivot_table_result = create_pivot_table()
-# обрабатываю штили
-PIVOT_TABLE_POSITION = 0
-velocity_direction_table = create_pivot_table_result[PIVOT_TABLE_POSITION]
-# print(velocity_direction_table)
-velocity_direction_table = calm_processing(velocity_direction_table)
-# делаю таблицу с повторяемостью градаций от общего числа всех наблюдений
-# (таблица 3.1)
-OBSERVATIONS_NUMBER_POSITION = 1
-observations_number = create_pivot_table_result[OBSERVATIONS_NUMBER_POSITION]
-# direction_recurrence = velocity_direction_table / velocity_direction_table.loc['All', 'All']
-direction_recurrence = velocity_direction_table / create_pivot_table_result[OBSERVATIONS_NUMBER_POSITION]
-direction_recurrence = direction_recurrence.drop(columns='All')
-# делаю таблицу с повторяемостью градаций в каждом румбе в процентах (таблица 3.2)
-PER_CENT = 100
-velocity_direction_table = recurrence_per_every_direction(
-    velocity_direction_table) * PER_CENT
-# делаю таблицу с продолжительностью каждой градации по каждому
-# направлению (таблица 3.3)
-velocity_direction_table = speed_direction_duration(velocity_direction_table)
-# эта таблица содержит координаты режимных функций ветра (рисунок 1)
-print(velocity_direction_table)
-# делаю рисунок режимных функций ветра по каждому направлению (рисунок 1)
-figure_plotting(velocity_direction_table)
-# рассчитываю значение режимной функции для каждого направления ветра
-output = speed_calculation(direction_recurrence, velocity_direction_table)
-print(output)
+def calculate_wind_speed():
+    # создаю сводную таблицу
+    create_pivot_table_result = create_pivot_table()
+    # обрабатываю штили
+    PIVOT_TABLE_POSITION = 0
+    velocity_direction_table = create_pivot_table_result[PIVOT_TABLE_POSITION]
+    # print(velocity_direction_table)
+    velocity_direction_table = calm_processing(velocity_direction_table)
+    # делаю таблицу с повторяемостью градаций от общего числа всех наблюдений
+    # (таблица 3.1)
+    OBSERVATIONS_NUMBER_POSITION = 1
+    observations_number = create_pivot_table_result[OBSERVATIONS_NUMBER_POSITION]
+    # direction_recurrence = velocity_direction_table / velocity_direction_table.loc['All', 'All']
+    direction_recurrence = velocity_direction_table / create_pivot_table_result[OBSERVATIONS_NUMBER_POSITION]
+    direction_recurrence = direction_recurrence.drop(columns='All')
+    # делаю таблицу с повторяемостью градаций в каждом румбе в процентах (таблица 3.2)
+    PER_CENT = 100
+    velocity_direction_table = recurrence_per_every_direction(
+        velocity_direction_table) * PER_CENT
+    # делаю таблицу с продолжительностью каждой градации по каждому
+    # направлению (таблица 3.3)
+    velocity_direction_table = speed_direction_duration(velocity_direction_table)
+    # эта таблица содержит координаты режимных функций ветра (рисунок 1)
+    print(velocity_direction_table)
+    # делаю рисунок режимных функций ветра по каждому направлению (рисунок 1)
+    figure_plotting(velocity_direction_table)
+    # рассчитываю значение режимной функции для каждого направления ветра
+    output = speed_calculation(direction_recurrence, velocity_direction_table)
+    print(output)
+
+if __name__=='__main__':
+    calculate_wind_speed()
