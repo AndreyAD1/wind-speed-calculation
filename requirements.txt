@@ -2,6 +2,7 @@ cffi==1.11.2
 Flask==0.12.2
 cycler==0.10.0
 matplotlib==2.1.1
+Flask-Bootstrap==3.3.7.1
 numpy==1.13.3
 pandas==0.21.1
 pyparsing==2.2.0
