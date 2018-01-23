@@ -16,3 +16,7 @@ HEADERS = {
 
 all_days = '1'
 only_month = '2'
+
+WIND_SPEED = 'Wind speed'
+WIND_DIRECTION = 'Wind direction'
+CALM = 'Штиль, безветрие'
