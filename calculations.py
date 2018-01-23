@@ -36,39 +36,16 @@ def get_pivot_table(data):
 
 # Обрабатываю случаи штилей
 def process_calm_cases(velocity_direction_table):
-
     # Нужно распределить штили равномерно по всем направлениями ветра.
     # количество колонок в таблице
     column_number = len(velocity_direction_table.columns)
     # количество штилей
     calm_cases = velocity_direction_table.loc[0, CALM]
-    # Вычисляю Количество штилей, равномерно распределённое по всем направлениями ветра.
+    # Вычисляю количество штилей, равномерно распределённое по всем направлениями ветра.
     # Для этого делю общее количество штилей на количество наблюдённых направлений ветра.
     #  Вычитаю 2 из общего числа колонок, так как две правые колонки - это "All" и "Штиль, безветрие"
     calm_cases_per_each_direction = calm_cases / (column_number - 2)
-    # записываю в каждый столбец строчки "0" количество штилей, распределённое
-    # по направлениям
-    velocity_direction_table.loc[0] = calm_cases_per_each_direction
-    # прибавляю в строку "All" каждой таблицы количество штилей,
-    # распределённое по направлениям
-    velocity_direction_table.loc['All'] = velocity_direction_table.loc['All'] + calm_cases_per_each_direction
-    # Задача выполнена. Штили распределены равномерно по всем направлениям ветра.
-    # удаляю столбец "Штиль, безветрие", потому что он не нужен
-    velocity_direction_table = velocity_direction_table.drop(
-        columns='Штиль, безветрие')
-    return velocity_direction_table
-
-
-# делаю таблицу с повторяемостью градаций в каждом румбе (таблица 3.2)
-# TODO rename function to verb name
-def recurrence_per_every_direction(velocity_direction_table):
-    for column in velocity_direction_table.columns:
-        cases_with_this_direction = velocity_direction_table.loc['All', column]
-        # количество случаев с этим направлением ветра
-        velocity_direction_table[column] = velocity_direction_table[column] / cases_with_this_direction
-    # удаляю столбец "All", потому что он не нужен
-    velocity_direction_table = velocity_direction_table.drop(columns='All')
-    return velocity_direction_table
+    return calm_cases_per_each_direction
 
 
 # делаю таблицу с продолжительностью каждой градации по каждому
@@ -102,14 +79,14 @@ def speed_direction_duration(velocity_direction_table):
 # TODO rename F to f_big
 # TODO rename function to verb name
 def linear_interpolation(F, velocity_direction_table, column_number):
-    raw_number = 0
+    row_number = 0
     wind_speed = 'error'
     # перебираю сверху вниз каждую строку в одном из столбцов таблицы 3.3
     for f_value in velocity_direction_table.iloc[:, column_number]:
         # если значение режимной функции меньше значения в данной строке, то
         # спускаюсь на 1 строку вниз
         if F < f_value:
-            raw_number += 1
+            row_number += 1
             continue
         # если значение режимной функции равно значению в данной строке, то
         # название данной строки - это и есть скорость ветра, которую мы ищем
@@ -123,11 +100,11 @@ def linear_interpolation(F, velocity_direction_table, column_number):
         # строками таблицы 3.3
         elif F > f_value:
             # название предыдущей строки
-            lower_wind_speed = velocity_direction_table.index[raw_number - 1]
+            lower_wind_speed = velocity_direction_table.index[row_number - 1]
             # название данной строки
-            bigger_wind_speed = velocity_direction_table.index[raw_number]
+            bigger_wind_speed = velocity_direction_table.index[row_number]
             lower_duration = velocity_direction_table.iloc[
-                raw_number - 1, column_number]
+                row_number - 1, column_number]
             bigger_duration = f_value
             # вычисляю угловой коэффициент уравнения прямой
             slope = (lower_wind_speed - bigger_wind_speed) / (lower_duration - bigger_duration)
@@ -229,17 +206,30 @@ def calculate_wind_speed():
     column_names=[]
     for column in velocity_direction_table.columns:
         column_names.append(column)
-    if column_names.count('Штиль, безветрие') > 0:
-        velocity_direction_table = process_calm_cases(velocity_direction_table)
+    if column_names.count(CALM) > 0:
+        calm_cases_per_each_direction = process_calm_cases(velocity_direction_table)
+        # записываю в каждый столбец строчки "0" количество штилей, распределённое
+        # по направлениям
+        velocity_direction_table.loc[0] = calm_cases_per_each_direction
+        # прибавляю в строку "All" каждой таблицы количество штилей,
+        # распределённое по направлениям
+        velocity_direction_table.loc['All'] = velocity_direction_table.loc['All'] + calm_cases_per_each_direction
+        # Задача выполнена. Штили распределены равномерно по всем направлениям ветра.
+        # удаляю столбец "Штиль, безветрие", потому что он не нужен
+        velocity_direction_table = velocity_direction_table.drop(columns=CALM)
     # делаю таблицу с повторяемостью градаций от общего числа всех наблюдений
     # (таблица 3.1)
     direction_recurrence = velocity_direction_table / observations_number
     direction_recurrence = direction_recurrence.drop(columns='All')
-    print(velocity_direction_table)
     # делаю таблицу с повторяемостью градаций в каждом румбе в процентах (таблица 3.2)
     PER_CENT = 100
-    velocity_direction_table = recurrence_per_every_direction(
-        velocity_direction_table) * PER_CENT
+    for column in velocity_direction_table.columns:
+        cases_with_this_direction = velocity_direction_table.loc['All', column]
+        # количество случаев с этим направлением ветра
+        velocity_direction_table[column] = velocity_direction_table[column] / cases_with_this_direction
+    # удаляю столбец "All", потому что он не нужен
+    velocity_direction_table = velocity_direction_table.drop(columns='All')
+    velocity_direction_table = velocity_direction_table * PER_CENT
     print(velocity_direction_table)
     # делаю таблицу с продолжительностью каждой градации по каждому
     # направлению (таблица 3.3)
