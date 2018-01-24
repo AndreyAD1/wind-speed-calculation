@@ -47,13 +47,23 @@ def process_calm_cases(velocity_direction_table):
     calm_cases_per_each_direction = calm_cases / (column_number - 2)
     return calm_cases_per_each_direction
 
+def get_table_2(velocity_direction_table):
+    # делаю таблицу с повторяемостью градаций в каждом румбе в процентах (таблица 3.2)
+    PER_CENT = 100
+    for column in velocity_direction_table.columns:
+        cases_with_this_direction = velocity_direction_table.loc['All', column]
+        # количество случаев с этим направлением ветра
+        velocity_direction_table[column] = velocity_direction_table[column] / cases_with_this_direction
+    # удаляю столбец "All", потому что он не нужен
+    velocity_direction_table = velocity_direction_table.drop(columns='All')
+    velocity_direction_table = velocity_direction_table * PER_CENT
+    return velocity_direction_table
+
 
 # делаю таблицу с продолжительностью каждой градации по каждому
 # направлению (таблица 3.3)
-# TODO rename function to verb name
-def speed_direction_duration(velocity_direction_table):
+def get_table_3(velocity_direction_table):
     # рассчитываю количество строк в таблице
-    # TODO not raw, but row
     row_number = len(velocity_direction_table.iloc[:, 1])
     # обнуляю самую нижнюю строку таблицы
     # TODO fix scenario with row_number = 0
@@ -222,18 +232,10 @@ def calculate_wind_speed():
     direction_recurrence = velocity_direction_table / observations_number
     direction_recurrence = direction_recurrence.drop(columns='All')
     # делаю таблицу с повторяемостью градаций в каждом румбе в процентах (таблица 3.2)
-    PER_CENT = 100
-    for column in velocity_direction_table.columns:
-        cases_with_this_direction = velocity_direction_table.loc['All', column]
-        # количество случаев с этим направлением ветра
-        velocity_direction_table[column] = velocity_direction_table[column] / cases_with_this_direction
-    # удаляю столбец "All", потому что он не нужен
-    velocity_direction_table = velocity_direction_table.drop(columns='All')
-    velocity_direction_table = velocity_direction_table * PER_CENT
-    print(velocity_direction_table)
+    velocity_direction_table = get_table_2(velocity_direction_table)
     # делаю таблицу с продолжительностью каждой градации по каждому
     # направлению (таблица 3.3)
-    velocity_direction_table = speed_direction_duration(velocity_direction_table)
+    velocity_direction_table = get_table_3(velocity_direction_table)
     # эта таблица содержит координаты режимных функций ветра (рисунок 1)
     print(velocity_direction_table)
     # делаю рисунок режимных функций ветра по каждому направлению (рисунок 1)
