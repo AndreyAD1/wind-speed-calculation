@@ -76,45 +76,47 @@
             </div>
             </div>
         </nav>
-
+        <form action="/calculate" method="POST">
         <div class="container-fluid">
         <div class="page-header">
             <h5>Введите идентификатор метеостанции:</h5>
-            <p>ID:&nbsp;<input type="text" id="weather_station" name="weather_station"></p>
+            <input id="station_id" type="text" name="station_id" />
         </div>
         <div class="page-header">
             <h5>Данные за период:</h5>
             <p><label for="from">с&nbsp;</label>
-            <input type="text" id="from" name="from">
+            <input type="text" id="from" name="from" />
             <label for="to">&nbsp;&nbsp;&nbsp;&nbsp;по&nbsp;</label>
-            <input type="text" id="to"   name="to"></p>
+            <input type="text" id="to"   name="to" /></p>
             за&nbsp;
-            <select>
-                <option>все дни в периоде</option>
-                <option>Январь</option>
-                <option>Февраль</option>
-                <option>Март</option>
-                <option>Апрель</option>
-                <option>Май</option>
-                <option>Июнь</option>
-                <option>Июль</option>
-                <option>Август</option>
-                <option>Сентябрь</option>
-                <option>Октябрь</option>
-                <option>Ноябрь</option>
-                <option>Декабрь</option>
+            <select name="month" id="month">
+                <option value="0">все дни в периоде</option>
+                <option value="1">Январь</option>
+                <option value="2">Февраль</option>
+                <option value="3">Март</option>
+                <option value="4">Апрель</option>
+                <option value="5">Май</option>
+                <option value="6">Июнь</option>
+                <option value="7">Июль</option>
+                <option value="8">Август</option>
+                <option value="9">Сентябрь</option>
+                <option value="10">Октябрь</option>
+                <option value="11">Ноябрь</option>
+                <option value="12">Декабрь</option>
             </select>
         </div>
         <div class="page-header">
             <h5>Выберите вероятность скорости ветра:</h5>
-            <p><input type="text"></p>
+            <p><input type="text" name="speed_prob" id="speed_prob" /></p>
         </div>
         <div class="page-header">
             <h5>Коэффициент 1:</h5>
-            <p><input type="text"></p>
+            <p><input type="text" name="k1" id="k1" /></p>
             <h5>Коэффициент 2:</h5>
-            <p><input type="text"></p>
+            <p><input type="text" name="k2" id="k2" /></p>
         </div>
+        <input type="submit" class="btn btn-default" value="Рассчитать"/>
         </div>
+        </form>
     </body>
 </html>
