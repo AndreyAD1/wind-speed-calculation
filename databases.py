@@ -44,26 +44,52 @@ class WindIndicator(Base):
         )
 
 
+MAX_DAYS = 365
+
+
+def make_intervals(start_date, end_date, max_days=MAX_DAYS):
+    start_date = datetime.datetime.strptime(start_date, '%d.%m.%Y')
+    end_date = datetime.datetime.strptime(end_date, '%d.%m.%Y')
+    delta = end_date - start_date
+    intervals = []
+    if delta.days > max_days:
+        start = start_date
+        end = start + datetime.timedelta(days=max_days)
+        while end < end_date:
+            intervals.append((start, end))
+            start = end
+            end = start + datetime.timedelta(days=max_days)
+        if start < end_date:
+            intervals.append((start, end_date))
+    else:
+        intervals.append((start_date, end_date))
+    return intervals
+
+
 def load_weather_data(station_id, start_date, end_date):
-    weather_data = get_weather(station_id, start_date, end_date)
-    station = WeatherStation.query.get(station_id)
-    if station is None:
-        station = WeatherStation(id=station_id)
-        db_session.add(station)
-    for row in weather_data:
-        local_date = datetime.datetime.strptime(
-            row['Localdate'], '%d.%m.%Y %H:%M')
-        wind_speed = int(row['Ff'])
-        wind_direction = row['DD']
-        wind = WindIndicator.query.get((local_date, station.id))
-        if wind is None:
-            wind = WindIndicator(
-                local_date=local_date,
-                wind_speed=wind_speed,
-                wind_direction=wind_direction,
-                weather_station_id=station.id)
-            db_session.add(wind)
-    db_session.commit()
+    intervals = make_intervals(start_date, end_date)
+    for start, end in intervals:
+        weather_data = get_weather(station_id, start, end)
+        station = WeatherStation.query.get(station_id)
+        if station is None:
+            station = WeatherStation(id=station_id)
+            db_session.add(station)
+        for row in weather_data:
+            local_date = datetime.datetime.strptime(
+                row['Localdate'], '%d.%m.%Y %H:%M')
+            if row['Ff'] == '' or row['DD'] == '':
+                continue
+            wind_speed = int(row['Ff'])
+            wind_direction = row['DD']
+            wind = WindIndicator.query.get((local_date, station.id))
+            if wind is None:
+                wind = WindIndicator(
+                    local_date=local_date,
+                    wind_speed=wind_speed,
+                    wind_direction=wind_direction,
+                    weather_station_id=station.id)
+                db_session.add(wind)
+        db_session.commit()
 
 
 def create_db():
@@ -72,4 +98,4 @@ def create_db():
 
 if __name__ == "__main__":
     create_db()
-    load_weather_data('27514', '16.12.2017', '18.12.2017')
+    load_weather_data('27514', '16.12.1990', '18.12.2017')
