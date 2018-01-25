@@ -20,3 +20,18 @@ only_month = '2'
 WIND_SPEED = 'Wind speed'
 WIND_DIRECTION = 'Wind direction'
 CALM = 'Штиль, безветрие'
+ALL = 'All'
+# продолжительность шторма всегда принимается равной 6 часам
+STORM_DURATION = 6
+# эмпирический коэффициент из формулы (3.1)
+COEF = 4.17
+# число дней в расчётном периоде. Это должно рассчитываться автоматически
+DAYS_NUMBER = 30
+# нормативная повторяемость в годах. Должна задаваться пользователем
+STORM_RECURRENCE = 25
+MINIMAL_TICK = 0.2
+MAXIMAL_TICK = 50
+TICKS_NUMBER = 9
+MINIMAL_X = 0
+MINIMAL_Y = 0.01
+MAXIMAL_Y = 60
