@@ -3,6 +3,7 @@
 # скорость ветра заданной обеспеченности по каждому румбу.
 
 from pandas import *
+import io
 from databases import WindIndicator
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -10,6 +11,7 @@ import numpy
 from constants import WIND_SPEED, WIND_DIRECTION, CALM, ALL, \
     STORM_DURATION, COEF, DAYS_NUMBER, STORM_RECURRENCE, MINIMAL_TICK, \
     MAXIMAL_TICK, TICKS_NUMBER, MINIMAL_X, MINIMAL_Y, MAXIMAL_Y
+
 
 # Из набора данных создаю сводную таблицу
 def get_pivot_table(data):
@@ -48,6 +50,7 @@ def process_calm_cases(velocity_direction_table):
     #  Вычитаю 2 из общего числа колонок, так как две правые колонки - это "All" и "Штиль, безветрие"
     calm_cases_per_each_direction = calm_cases / (column_number - 2)
     return calm_cases_per_each_direction
+
 
 def get_table_2(velocity_direction_table):
     # делаю таблицу с повторяемостью градаций в каждом румбе в процентах (таблица 3.2)
@@ -159,9 +162,13 @@ def plot_figure(velocity_direction_table):
         picture.legend()
 
     # немного увеличиваю расстояние между левым и правым рисунком
-    plt.tight_layout(w_pad = -0.2)
-    # plt.show()
-    plt.savefig('picture.png', format='png', dpi=400)
+    plt.tight_layout(w_pad=1)
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', dpi=400)
+    buf.seek(0)
+    return buf
+
 
 def calculate_wind_speed():
     # создаю сводную таблицу
@@ -191,13 +198,15 @@ def calculate_wind_speed():
     # направлению (таблица 3.3)
     velocity_direction_table = get_table_3(velocity_direction_table)
     # эта таблица содержит координаты режимных функций ветра (рисунок 1)
-    print(velocity_direction_table)
+    # print(velocity_direction_table)
     # делаю рисунок режимных функций ветра по каждому направлению (рисунок 1)
-    plot_figure(velocity_direction_table)
+    image_buf = plot_figure(velocity_direction_table)
     # рассчитываю значение режимной функции для каждого направления ветра
     calculated_wind_speed = calculate_speed(direction_recurrence, velocity_direction_table)
-    print(calculated_wind_speed)
-    return velocity_direction_table, calculated_wind_speed
+    # print(calculated_wind_speed)
+    return velocity_direction_table, calculated_wind_speed, image_buf
+
 
 if __name__=='__main__':
     calculate_wind_speed()
+
