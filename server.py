@@ -28,7 +28,7 @@ def calculate():
     return render_template(
         'calculate.html',
         velocity_table=velocity,
-        image=str(image_encoded)
+        image=str(image_encoded),
     )
 
 
