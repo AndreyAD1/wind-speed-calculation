@@ -3,8 +3,8 @@ import base64
 from flask import Flask, render_template, request
 from flask_bootstrap import Bootstrap
 
-from databases import create_db, load_weather_data
-from calculations import calculate_wind_speed
+from databases import create_db, load_weather_data, WindIndicator
+from calculations import get_calculation_results
 
 app = Flask(__name__)
 Bootstrap(app)
@@ -22,7 +22,8 @@ def calculate():
     start_date = form['from']
     end_date = form['to']
     load_weather_data(station_id, start_date, end_date)
-    velocity, _, image_buf = calculate_wind_speed()
+    data = WindIndicator.query.filter(WindIndicator.weather_station_id==station_id).all()
+    velocity, _, image_buf = get_calculation_results(data)
     image_encoded = base64.b64encode(image_buf.getvalue()).decode('utf-8')
     return render_template(
         'calculate.html',

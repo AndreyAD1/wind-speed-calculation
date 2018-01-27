@@ -4,13 +4,15 @@
 
 from pandas import *
 import io
-from databases import WindIndicator
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy
-from constants import WIND_SPEED, WIND_DIRECTION, CALM, ALL, \
-    STORM_DURATION, COEF, DAYS_NUMBER, STORM_RECURRENCE, MINIMAL_TICK, \
+from constants import (
+    WIND_SPEED, WIND_DIRECTION, CALM, ALL,
+    STORM_DURATION, COEF, DAYS_NUMBER, STORM_RECURRENCE, MINIMAL_TICK,
     MAXIMAL_TICK, TICKS_NUMBER, MINIMAL_X, MINIMAL_Y, MAXIMAL_Y, PER_CENT
+)
 
 
 # Из набора данных создаю сводную таблицу
@@ -66,6 +68,7 @@ def get_table_2(velocity_direction_table):
 # делаю таблицу с продолжительностью каждой градации по каждому
 # направлению (таблица 3.3)
 def get_table_3(velocity_direction_table):
+    # добавить исключение
     # рассчитываю количество строк в таблице
     row_number = len(velocity_direction_table.iloc[:, 1])
     # обнуляю самую нижнюю строку таблицы
@@ -89,27 +92,26 @@ def get_table_3(velocity_direction_table):
 
 
 # вычисляю скорость ветра по значению режимной функции
-def interpolate(f_big, velocity_direction_table, column_number):
+def get_wind_speed(f_big, velocity_direction_table, column_number):
     row_number = 0
+
     for duration in velocity_direction_table.iloc[:, column_number]:
         if f_big < duration:
             row_number += 1
             continue
-        elif f_big == duration:
-            wind_speed = velocity_direction_table.index[row_number]
-            break
-        else:
-            lower_wind_speed = velocity_direction_table.index[row_number - 1]
-            bigger_wind_speed = velocity_direction_table.index[row_number]
-            lower_duration = velocity_direction_table.iloc[
-                row_number - 1, column_number]
-            durations = numpy.array([lower_duration, duration])
-            speeds = numpy.array([lower_wind_speed, bigger_wind_speed])
-            # вычисляю нужную нам скорость ветра, линейно интерполируя между
-            # строками таблицы 3.3
-            wind_speed = numpy.interp(f_big, durations, speeds)
-            break
-    return wind_speed
+
+        if f_big == duration:
+            return velocity_direction_table.index[row_number]
+
+        lower_wind_speed = velocity_direction_table.index[row_number - 1]
+        bigger_wind_speed = velocity_direction_table.index[row_number]
+        lower_duration = velocity_direction_table.iloc[
+            row_number - 1, column_number]
+        durations = numpy.array([lower_duration, duration])
+        speeds = numpy.array([lower_wind_speed, bigger_wind_speed])
+        # вычисляю нужную нам скорость ветра, линейно интерполируя между
+        # строками таблицы 3.3
+        return numpy.interp(f_big, durations, speeds)
 
 
 # вычисляем значение режимной функции F по формуле (3.1) и рассчитываю
@@ -118,22 +120,24 @@ def calculate_speed(direction_recurrence, velocity_direction_table):
     # рассчитываем F для каждого направления ветра
     wind_speed_list = []
     column_number = 0
+    wind_speed_dict = {}
     # перебираю каждый столбец таблицы 3.3, то есть каждое направление ветра
     for direction_recurrence in direction_recurrence.loc['All']:
         # рассчитываю значение режимной функции по формуле 3.1
-        f_big = COEF * STORM_DURATION / \
-            (DAYS_NUMBER * STORM_RECURRENCE * direction_recurrence)
+        f_big = COEF * STORM_DURATION / (
+                DAYS_NUMBER * STORM_RECURRENCE * direction_recurrence)
         # вычисляю скорость ветра по значению режимной функции, линейно
         # интерполируя между строками таблицы 3.3
-        wind_velocity = interpolate(f_big, velocity_direction_table, column_number)
+        wind_speed = get_wind_speed(f_big, velocity_direction_table, column_number)
         wind_speed_list.append(velocity_direction_table.columns[column_number])
-        wind_speed_list.append(wind_velocity)
+        wind_speed_list.append(wind_speed)
+        wind_speed_dict.update({wind_speed:velocity_direction_table.columns[column_number]})
         column_number += 1
-    return wind_speed_list
+    return wind_speed_dict
 
 
 # создаю график режимных скоростей ветра
-def plot_figure(velocity_direction_table):
+def get_picture(velocity_direction_table):
     velocity_axis = velocity_direction_table.index.values
     figure = plt.figure()
     # создаю две пары осей: слева и справа
@@ -170,10 +174,7 @@ def plot_figure(velocity_direction_table):
     return buf
 
 
-def calculate_wind_speed():
-    # создаю сводную таблицу
-    observation_data = WindIndicator
-    data = observation_data.query.filter(observation_data.weather_station_id == '27514').all()
+def get_calculation_results(data):
     velocity_direction_table = get_pivot_table(data)
     observations_number = velocity_direction_table.loc[ALL,ALL]
     # обрабатываю штили
@@ -198,15 +199,13 @@ def calculate_wind_speed():
     # направлению (таблица 3.3)
     velocity_direction_table = get_table_3(velocity_direction_table)
     # эта таблица содержит координаты режимных функций ветра (рисунок 1)
-    # print(velocity_direction_table)
     # делаю рисунок режимных функций ветра по каждому направлению (рисунок 1)
-    image_buf = plot_figure(velocity_direction_table)
+    image_buf = get_picture(velocity_direction_table)
     # рассчитываю значение режимной функции для каждого направления ветра
     calculated_wind_speed = calculate_speed(direction_recurrence, velocity_direction_table)
-    # print(calculated_wind_speed)
     return velocity_direction_table, calculated_wind_speed, image_buf
 
 
 if __name__=='__main__':
-    calculate_wind_speed()
+    get_calculation_results()
 
