@@ -17,6 +17,7 @@
 1. `pip install -r requirements.txt`;
 2. `python databases.py`.
 Для установки модуля `matplotlib` на MacOS воспользуйтесь ответом по ссылке: https://stackoverflow.com/questions/21784641/installation-issue-with-matplotlib-python.
+
 Для запуска приложения выполните `python server.py`.
 
 Входные данные
