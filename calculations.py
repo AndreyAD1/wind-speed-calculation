@@ -10,7 +10,7 @@ import matplotlib.ticker as ticker
 import numpy
 from constants import WIND_SPEED, WIND_DIRECTION, CALM, ALL, \
     STORM_DURATION, COEF, DAYS_NUMBER, STORM_RECURRENCE, MINIMAL_TICK, \
-    MAXIMAL_TICK, TICKS_NUMBER, MINIMAL_X, MINIMAL_Y, MAXIMAL_Y
+    MAXIMAL_TICK, TICKS_NUMBER, MINIMAL_X, MINIMAL_Y, MAXIMAL_Y, PER_CENT
 
 
 # Из набора данных создаю сводную таблицу
@@ -21,8 +21,8 @@ def get_pivot_table(data):
     for observation in data:
         direction.append(observation.wind_direction)
         speed.append(observation.wind_speed)
-    observation_data = {WIND_SPEED:speed, WIND_DIRECTION:direction}
-    required_data=pandas.DataFrame(data=observation_data)
+    observation_data = {WIND_SPEED: speed, WIND_DIRECTION: direction}
+    required_data = pandas.DataFrame(data=observation_data)
     # добавляю вспомогательный столбец, который нужен для создания сводной
     # таблицы
     required_data = required_data.assign(Wind_speed_dublicate=required_data[WIND_SPEED])
@@ -54,7 +54,6 @@ def process_calm_cases(velocity_direction_table):
 
 def get_table_2(velocity_direction_table):
     # делаю таблицу с повторяемостью градаций в каждом румбе в процентах (таблица 3.2)
-    PER_CENT = 100
     for column in velocity_direction_table.columns:
         cases_with_this_direction = velocity_direction_table.loc[ALL, column]
         velocity_direction_table[column] = velocity_direction_table[column] / cases_with_this_direction
@@ -99,7 +98,7 @@ def interpolate(f_big, velocity_direction_table, column_number):
         elif f_big == duration:
             wind_speed = velocity_direction_table.index[row_number]
             break
-        elif f_big > duration:
+        else:
             lower_wind_speed = velocity_direction_table.index[row_number - 1]
             bigger_wind_speed = velocity_direction_table.index[row_number]
             lower_duration = velocity_direction_table.iloc[
@@ -122,11 +121,11 @@ def calculate_speed(direction_recurrence, velocity_direction_table):
     # перебираю каждый столбец таблицы 3.3, то есть каждое направление ветра
     for direction_recurrence in direction_recurrence.loc['All']:
         # рассчитываю значение режимной функции по формуле 3.1
-        F = COEF * STORM_DURATION / \
+        f_big = COEF * STORM_DURATION / \
             (DAYS_NUMBER * STORM_RECURRENCE * direction_recurrence)
         # вычисляю скорость ветра по значению режимной функции, линейно
         # интерполируя между строками таблицы 3.3
-        wind_velocity = interpolate(F, velocity_direction_table, column_number)
+        wind_velocity = interpolate(f_big, velocity_direction_table, column_number)
         wind_speed_list.append(velocity_direction_table.columns[column_number])
         wind_speed_list.append(wind_velocity)
         column_number += 1
@@ -166,6 +165,7 @@ def plot_figure(velocity_direction_table):
 
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=400)
+    plt.savefig('picture.png', format='png', dpi=400)
     buf.seek(0)
     return buf
 
