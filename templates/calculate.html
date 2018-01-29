@@ -15,14 +15,28 @@
             </div>
             </div>
         </nav>
+        <a href="/" style="margin-left: 15px; text-decoration: underline;">На главную</a>
+
+        <h2 style="margin-left: 15px;">Режимные функции скорости ветра</h2>
         <div>
             <img style="max-width: 50%;" src="data:image/png;base64,{{ image }}" />
         </div>
-        <div>
+
+        <h2 style="margin-left: 15px;">Продолжительность градаций ветра по каждому румбу, %</h2>
+        <div style="margin-left: 15px;">
             {{ velocity_table.to_html(classes="table")|safe }}
         </div>
-        <div>
-            {{ result_direction_speed.to_html(classes="table")|safe }}
+
+        <h2 style="margin-left: 15px;">Расчетные скорости ветра по каждому румбу, м/с</h2>
+        <div style="margin-left: 15px;">
+            <table class="table">
+                {% for key, value in result_direction_speed.items() %}
+                  <tr>
+                     <th> {{ key }} </th>
+                     <td> {{ value }} </td>
+                  </tr>
+                {% endfor %}
+            </table>
         </div>
     </body>
 </html>

@@ -131,7 +131,7 @@ def calculate_speed(direction_recurrence, velocity_direction_table):
         wind_speed = get_wind_speed(f_big, velocity_direction_table, column_number)
         wind_speed_list.append(velocity_direction_table.columns[column_number])
         wind_speed_list.append(wind_speed)
-        wind_speed_dict.update({wind_speed:velocity_direction_table.columns[column_number]})
+        wind_speed_dict.update({velocity_direction_table.columns[column_number]:wind_speed})
         column_number += 1
     return wind_speed_dict
 
