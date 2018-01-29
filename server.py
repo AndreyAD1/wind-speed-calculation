@@ -21,9 +21,14 @@ def calculate():
     station_id = form['station_id']
     start_date = form['from']
     end_date = form['to']
+    print(type(start_date))
+    print(type(end_date))
+    # TODO сделать проверку, чтобы всегда storm_recurrence > 0
+    storm_recurrence = form['storm_recurrence']
+    storm_recurrence = float(storm_recurrence)
     load_weather_data(station_id, start_date, end_date)
     data = WindIndicator.query.filter(WindIndicator.weather_station_id==station_id).all()
-    velocity, _, image_buf = get_calculation_results(data)
+    velocity, _, image_buf = get_calculation_results(data, storm_recurrence, start_date, end_date)
     image_encoded = base64.b64encode(image_buf.getvalue()).decode('utf-8')
     return render_template(
         'calculate.html',

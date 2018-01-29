@@ -10,9 +10,10 @@ import matplotlib.ticker as ticker
 import numpy
 from constants import (
     WIND_SPEED, WIND_DIRECTION, CALM, ALL,
-    STORM_DURATION, COEF, DAYS_NUMBER, STORM_RECURRENCE, MINIMAL_TICK,
+    STORM_DURATION, COEF, MINIMAL_TICK,
     MAXIMAL_TICK, TICKS_NUMBER, MINIMAL_X, MINIMAL_Y, MAXIMAL_Y, PER_CENT
 )
+from datetime import date, timedelta
 
 
 # Из набора данных создаю сводную таблицу
@@ -116,28 +117,35 @@ def get_wind_speed(f_big, velocity_direction_table, column_number):
 
 # вычисляем значение режимной функции F по формуле (3.1) и рассчитываю
 # скорость ветра
-def calculate_speed(direction_recurrence, velocity_direction_table):
+def calculate_speed(direction_recurrence, velocity_direction_table, storm_recurrence, start_date, end_date):
+    start_date = datetime.strptime(start_date, '%d.%m.%Y')
+    end_date = datetime.strptime(end_date, '%d.%m.%Y')
+    # выбрал 2016 год, потому что он високосный и ему подойдёт любая дата
+    start_date_without_year = start_date.replace(year=2016)
+    end_date_without_year = end_date.replace(year=2016)
+    time_difference = end_date_without_year - start_date_without_year
+    days_number = 365
+    if time_difference.days > 0:
+        days_number = time_difference.days
     # рассчитываем F для каждого направления ветра
-    wind_speed_list = []
     column_number = 0
     wind_speed_dict = {}
     # перебираю каждый столбец таблицы 3.3, то есть каждое направление ветра
     for direction_recurrence in direction_recurrence.loc['All']:
         # рассчитываю значение режимной функции по формуле 3.1
         f_big = COEF * STORM_DURATION / (
-                DAYS_NUMBER * STORM_RECURRENCE * direction_recurrence)
+                days_number * storm_recurrence * direction_recurrence)
         # вычисляю скорость ветра по значению режимной функции, линейно
         # интерполируя между строками таблицы 3.3
         wind_speed = get_wind_speed(f_big, velocity_direction_table, column_number)
-        wind_speed_list.append(velocity_direction_table.columns[column_number])
-        wind_speed_list.append(wind_speed)
-        wind_speed_dict.update({wind_speed:velocity_direction_table.columns[column_number]})
+        wind_speed_dict.update({velocity_direction_table.columns[column_number]: wind_speed})
         column_number += 1
     return wind_speed_dict
 
 
 # создаю график режимных скоростей ветра
 def get_picture(velocity_direction_table):
+    # TODO подписать оси на рисунке, добавить легенду
     velocity_axis = velocity_direction_table.index.values
     figure = plt.figure()
     # создаю две пары осей: слева и справа
@@ -154,14 +162,14 @@ def get_picture(velocity_direction_table):
         else:
             right_graphs.plot(velocity_axis, duration_axis, label=graph_number)
     y_labels = numpy.geomspace(MINIMAL_TICK, MAXIMAL_TICK, TICKS_NUMBER)
-    MAXIMAL_X = velocity_axis.max()
+    maximal_x = velocity_axis.max()
     for picture in [left_graphs, right_graphs]:
         # делаю вертикальную ось логарифмической c симметрией относительно 0,
         # при значениях ниже 5 рисуется прямая линия
         picture.set_yscale('symlog', linthreshy=5)
         picture.set_yticks(y_labels)
         picture.yaxis.set_major_formatter(ticker.ScalarFormatter())
-        picture.axis([MINIMAL_X, MAXIMAL_X, MAXIMAL_Y, MINIMAL_Y])
+        picture.axis([MINIMAL_X, maximal_x, MAXIMAL_Y, MINIMAL_Y])
         picture.legend()
 
     # немного увеличиваю расстояние между левым и правым рисунком
@@ -174,11 +182,11 @@ def get_picture(velocity_direction_table):
     return buf
 
 
-def get_calculation_results(data):
+def get_calculation_results(data, storm_recurrence, start_date, end_date):
     velocity_direction_table = get_pivot_table(data)
-    observations_number = velocity_direction_table.loc[ALL,ALL]
+    observations_number = velocity_direction_table.loc[ALL, ALL]
     # обрабатываю штили
-    column_names=[]
+    column_names = []
     for column in velocity_direction_table.columns:
         column_names.append(column)
     if column_names.count(CALM) > 0:
@@ -202,10 +210,12 @@ def get_calculation_results(data):
     # делаю рисунок режимных функций ветра по каждому направлению (рисунок 1)
     image_buf = get_picture(velocity_direction_table)
     # рассчитываю значение режимной функции для каждого направления ветра
-    calculated_wind_speed = calculate_speed(direction_recurrence, velocity_direction_table)
+    calculated_wind_speed = calculate_speed(direction_recurrence, velocity_direction_table,
+                                            storm_recurrence, start_date, end_date
+    )
+    print(calculated_wind_speed)
     return velocity_direction_table, calculated_wind_speed, image_buf
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     get_calculation_results()
-
