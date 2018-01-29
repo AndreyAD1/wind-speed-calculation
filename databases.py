@@ -98,4 +98,4 @@ def create_db():
 
 if __name__ == "__main__":
     create_db()
-    load_weather_data('27514', '16.12.1990', '18.12.2017')
+    #load_weather_data('27514', '16.12.1990', '18.12.2017')
