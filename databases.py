@@ -48,8 +48,6 @@ MAX_DAYS = 365
 
 
 def make_intervals(start_date, end_date, max_days=MAX_DAYS):
-    # start_date = datetime.datetime.strptime(start_date, '%d.%m.%Y')
-    # end_date = datetime.datetime.strptime(end_date, '%d.%m.%Y')
     delta = end_date - start_date
     intervals = []
     if delta.days > max_days:
@@ -99,4 +97,3 @@ def create_db():
 
 if __name__ == "__main__":
     create_db()
-    #load_weather_data('27514', '16.12.1990', '18.12.2017')

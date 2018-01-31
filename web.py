@@ -1,11 +1,10 @@
 import base64
+from datetime import datetime
 
 from flask import Flask, render_template, request
 from flask_bootstrap import Bootstrap
 
-from datetime import datetime
-
-from databases import create_db, load_weather_data, WindIndicator
+from databases import load_weather_data, WindIndicator
 from calculations import get_calculation_results
 
 
@@ -28,23 +27,22 @@ def calculate():
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
     end_date = datetime.strptime(end_date, '%d.%m.%Y')
     load_weather_data(station_id, start_date, end_date)
+
     data = WindIndicator.query.filter(WindIndicator.weather_station_id == station_id,
-                                      WindIndicator.local_date < end_date, WindIndicator.local_date > start_date).all()
+                                      WindIndicator.local_date < end_date,
+                                      WindIndicator.local_date > start_date).all()
+
     # TODO сделать проверку, чтобы всегда storm_recurrence > 0
     storm_recurrence = float(storm_recurrence)
-    # velocity, _, image_buf = get_calculation_results(data, storm_recurrence, start_date, end_date)
-
-    # filter(
-    #     WindIndicator.local_date
-    #
-    #     )
-
 
     velocity, result_direction_speed, image_buf = get_calculation_results(data, storm_recurrence, start_date, end_date)
     image_encoded = base64.b64encode(image_buf.getvalue()).decode('utf-8')
 
     return render_template(
         'calculate.html',
+        station_id=station_id,
+        start_date=start_date,
+        end_date=end_date,
         velocity_table=velocity,
         image=str(image_encoded),
         result_direction_speed=result_direction_speed
@@ -52,5 +50,4 @@ def calculate():
 
 
 if __name__ == '__main__':
-    create_db()
     app.run(port=8080, debug=True)
