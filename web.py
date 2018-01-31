@@ -24,7 +24,6 @@ def calculate():
     station_id = form['station_id']
     start_date = form['from']
     end_date = form['to']
-<<<<<<< HEAD:server.py
     storm_recurrence = form['storm_recurrence']
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
     end_date = datetime.strptime(end_date, '%d.%m.%Y')
@@ -33,16 +32,15 @@ def calculate():
                                       WindIndicator.local_date < end_date, WindIndicator.local_date > start_date).all()
     # TODO сделать проверку, чтобы всегда storm_recurrence > 0
     storm_recurrence = float(storm_recurrence)
-    velocity, _, image_buf = get_calculation_results(data, storm_recurrence, start_date, end_date)
+    # velocity, _, image_buf = get_calculation_results(data, storm_recurrence, start_date, end_date)
 
-    filter(
-        WindIndicator.local_date
+    # filter(
+    #     WindIndicator.local_date
+    #
+    #     )
 
-        )
 
-
-    velocity, result_direction_speed, image_buf = get_calculation_results(data)
->>>>>>> refs/remotes/origin/develop:web.py
+    velocity, result_direction_speed, image_buf = get_calculation_results(data, storm_recurrence, start_date, end_date)
     image_encoded = base64.b64encode(image_buf.getvalue()).decode('utf-8')
 
     return render_template(
