@@ -72,48 +72,26 @@
         <nav class="navbar navbar-default">
             <div class="container-fluid">
             <div class="navbar-header">
-                <a class="navbar-brand">Wind speed calculation</a>
+                <a class="navbar-brand" href="/">Wind speed calculation</a>
             </div>
             </div>
         </nav>
         <form action="/calculate" method="POST">
         <div class="container-fluid">
         <div class="page-header">
-            <h5>Введите идентификатор метеостанции:</h5>
-            <input id="station_id" type="text" name="station_id" />
+            <h5>Введите идентификатор метеостанции (WMO ID):</h5>
+            <input id="station_id" type="text" name="station_id" required />
         </div>
         <div class="page-header">
             <h5>Данные за период:</h5>
             <p><label for="from">с&nbsp;</label>
-            <input type="text" id="from" name="from" />
+            <input type="text" id="from" name="from" required />
             <label for="to">&nbsp;&nbsp;&nbsp;&nbsp;по&nbsp;</label>
-            <input type="text" id="to"   name="to" /></p>
-            за&nbsp;
-            <select name="month" id="month">
-                <option value="0">все дни в периоде</option>
-                <option value="1">Январь</option>
-                <option value="2">Февраль</option>
-                <option value="3">Март</option>
-                <option value="4">Апрель</option>
-                <option value="5">Май</option>
-                <option value="6">Июнь</option>
-                <option value="7">Июль</option>
-                <option value="8">Август</option>
-                <option value="9">Сентябрь</option>
-                <option value="10">Октябрь</option>
-                <option value="11">Ноябрь</option>
-                <option value="12">Декабрь</option>
-            </select>
+            <input type="text" id="to"   name="to" required /></p>
         </div>
         <div class="page-header">
             <h5>Выберите вероятность скорости ветра:</h5>
             <p><input type="text" name="speed_prob" id="speed_prob" /></p>
-        </div>
-        <div class="page-header">
-            <h5>Коэффициент 1:</h5>
-            <p><input type="text" name="k1" id="k1" /></p>
-            <h5>Коэффициент 2:</h5>
-            <p><input type="text" name="k2" id="k2" /></p>
         </div>
         <input type="submit" class="btn btn-default" value="Рассчитать"/>
         </div>

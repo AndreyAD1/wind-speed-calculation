@@ -11,11 +11,14 @@
         <nav class="navbar navbar-default">
             <div class="container-fluid">
             <div class="navbar-header">
-                <a class="navbar-brand">Wind speed calculation</a>
+                <a class="navbar-brand" href="/">Wind speed calculation</a>
             </div>
             </div>
         </nav>
-        <a href="/" style="margin-left: 15px; text-decoration: underline;">На главную</a>
+
+        <p style="margin-left: 15px; line-height: 3; font-size: 16px;">
+            Расчет составлен для метостанции с  WMO ID {{ station_id }} за период с {{ start_date}} по {{ end_date }}.
+        </p>
 
         <h2 style="margin-left: 15px;">Режимные функции скорости ветра</h2>
         <div>
@@ -38,5 +41,7 @@
                 {% endfor %}
             </table>
         </div>
+
+        <a href="/" class="btn btn-default" style="margin-left: 15px; margin-bottom: 50px;">На главную</a>
     </body>
 </html>
