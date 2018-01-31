@@ -111,8 +111,7 @@ def get_wind_speed(f_big, velocity_direction_table, column_name):
 # вычисляем значение режимной функции F по формуле (3.1) и рассчитываю
 # скорость ветра
 def calculate_speed(direction_recurrence_table, velocity_direction_table, storm_recurrence,
-        start_date, end_date, direction_list
-    ):
+                    start_date, end_date, direction_list):
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
     end_date = datetime.strptime(end_date, '%d.%m.%Y')
     # выбрал 2016 год, потому что он високосный и ему подойдёт любая дата
@@ -130,6 +129,7 @@ def calculate_speed(direction_recurrence_table, velocity_direction_table, storm_
         # вычисляю скорость ветра по значению режимной функции, линейно
         # интерполируя между строками таблицы 3.3
         wind_speed = get_wind_speed(f_big, velocity_direction_table, direction_list[column_number])
+        wind_speed = round(wind_speed, 1)
         wind_speed_dict.update({direction_list[column_number]: wind_speed})
         column_number += 1
     return wind_speed_dict
@@ -163,8 +163,8 @@ def get_picture(velocity_direction_table, direction_list):
         picture.yaxis.set_major_formatter(ticker.ScalarFormatter())
         picture.axis([MINIMAL_X, maximal_x, MAXIMAL_Y, MINIMAL_Y])
         picture.legend()
-        picture.set_ylabel('F, %', rotation='horizontal', position=(0,0.96))
-        picture.set_xlabel('v, м/с', position=(1,0))
+        picture.set_ylabel('F, %', rotation='horizontal', position=(0, 0.96))
+        picture.set_xlabel('v, м/с', position=(1, 0))
 
     # немного увеличиваю расстояние между левым и правым рисунком
     plt.tight_layout(w_pad=1)
@@ -206,7 +206,6 @@ def get_calculation_results(data, storm_recurrence, start_date, end_date):
     calculated_wind_speed = calculate_speed(direction_recurrence_table, velocity_direction_table,
                                             storm_recurrence, start_date, end_date, direction_list
                                             )
-    print(calculated_wind_speed)
     return velocity_direction_table, calculated_wind_speed, image_buf
 
 
