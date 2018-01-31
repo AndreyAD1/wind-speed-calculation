@@ -99,10 +99,10 @@ def get_wind_speed(f_big, velocity_direction_table, column_name):
 
         lower_wind_speed = velocity_direction_table.index[row_number - 1]
         bigger_wind_speed = velocity_direction_table.index[row_number]
-        lower_duration = velocity_direction_table.loc[
+        bigger_duration = velocity_direction_table.loc[
             lower_wind_speed, column_name]
-        durations = numpy.array([lower_duration, duration])
-        speeds = numpy.array([lower_wind_speed, bigger_wind_speed])
+        durations = numpy.array([duration, bigger_duration])
+        speeds = numpy.array([bigger_wind_speed, lower_wind_speed])
         # вычисляю нужную нам скорость ветра, линейно интерполируя между
         # строками таблицы 3.3
         return numpy.interp(f_big, durations, speeds)
@@ -110,7 +110,7 @@ def get_wind_speed(f_big, velocity_direction_table, column_name):
 
 # вычисляем значение режимной функции F по формуле (3.1) и рассчитываю
 # скорость ветра
-def calculate_speed(direction_recurrence, velocity_direction_table, storm_recurrence,
+def calculate_speed(direction_recurrence_table, velocity_direction_table, storm_recurrence,
         start_date, end_date, direction_list
     ):
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
@@ -125,20 +125,18 @@ def calculate_speed(direction_recurrence, velocity_direction_table, storm_recurr
 
     column_number = 0
     wind_speed_dict = {}
-    for direction_recurrence in direction_recurrence.loc['All']:
+    for direction_recurrence in direction_recurrence_table.loc['All']:
         f_big = COEF * STORM_DURATION / (days_number * storm_recurrence * direction_recurrence)
         # вычисляю скорость ветра по значению режимной функции, линейно
         # интерполируя между строками таблицы 3.3
         wind_speed = get_wind_speed(f_big, velocity_direction_table, direction_list[column_number])
         wind_speed_dict.update({direction_list[column_number]: wind_speed})
-        print('calculation', wind_speed_dict)
         column_number += 1
-    # TODO разобраться, почему в ответе всегда выдаются целые числа
     return wind_speed_dict
 
 
 def get_picture(velocity_direction_table, direction_list):
-    # TODO сделать расшифровку легенды
+    # TODO сделать так, чтобы расшифровка легенды совпадала с выводом расчётных скоростей
     velocity_axis = velocity_direction_table.index.values
     figure = plt.figure()
     left_graphs = figure.add_subplot(1, 2, 1)
@@ -149,7 +147,6 @@ def get_picture(velocity_direction_table, direction_list):
         graph_number += 1
         duration_axis = velocity_direction_table[direction].values
         legend_decoding.update({graph_number: direction})
-        print('legend', legend_decoding)
         # рисую график на левых осях. Если графиков на левых осях становится
         # больше 8, то рисую графики на правых осях
         if graph_number <= 8:
@@ -176,7 +173,6 @@ def get_picture(velocity_direction_table, direction_list):
     plt.savefig(buf, format='png', dpi=400)
     # plt.savefig('picture.png', format='png', dpi=400)
     buf.seek(0)
-    print(legend_decoding)
     return buf
 
 
@@ -194,12 +190,11 @@ def get_calculation_results(data, storm_recurrence, start_date, end_date):
 
     # делаю таблицу с повторяемостью градаций от общего числа всех наблюдений
     # (таблица 3.1)
-    direction_recurrence = velocity_direction_table / observations_number
-    direction_recurrence = direction_recurrence.drop(columns=ALL)
+    direction_recurrence_table = velocity_direction_table / observations_number
+    direction_recurrence_table = direction_recurrence_table.drop(columns=ALL)
     direction_list = []
-    for direction in direction_recurrence.columns:
+    for direction in direction_recurrence_table.columns:
         direction_list.append(direction)
-    print('direction_list', direction_list)
     # делаю таблицу с повторяемостью градаций в каждом румбе в процентах (таблица 3.2)
     velocity_direction_table = get_table_2(velocity_direction_table, direction_list)
     # делаю таблицу с продолжительностью каждой градации по каждому
@@ -208,9 +203,9 @@ def get_calculation_results(data, storm_recurrence, start_date, end_date):
     # делаю рисунок режимных функций ветра по каждому направлению (рисунок 1)
     image_buf = get_picture(velocity_direction_table, direction_list)
     # рассчитываю значение режимной функции для каждого направления ветра
-    calculated_wind_speed = calculate_speed(direction_recurrence, velocity_direction_table,
+    calculated_wind_speed = calculate_speed(direction_recurrence_table, velocity_direction_table,
                                             storm_recurrence, start_date, end_date, direction_list
-    )
+                                            )
     print(calculated_wind_speed)
     return velocity_direction_table, calculated_wind_speed, image_buf
 
