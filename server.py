@@ -21,8 +21,6 @@ def calculate():
     station_id = form['station_id']
     start_date = form['from']
     end_date = form['to']
-    print(type(start_date))
-    print(type(end_date))
     # TODO сделать проверку, чтобы всегда storm_recurrence > 0
     storm_recurrence = form['storm_recurrence']
     storm_recurrence = float(storm_recurrence)
