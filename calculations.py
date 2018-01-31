@@ -111,8 +111,8 @@ def get_wind_speed(f_big, velocity_direction_table, column_name):
 # скорость ветра
 def calculate_speed(direction_recurrence_table, velocity_direction_table, storm_recurrence,
                     start_date, end_date, direction_list):
-    start_date = datetime.strptime(start_date, '%d.%m.%Y')
-    end_date = datetime.strptime(end_date, '%d.%m.%Y')
+    # start_date = datetime.strptime(start_date, '%d.%m.%Y')
+    # end_date = datetime.strptime(end_date, '%d.%m.%Y')
     # выбрал 2016 год, потому что он високосный и ему подойдёт любая дата
     start_date_without_year = start_date.replace(year=2016)
     end_date_without_year = end_date.replace(year=2016)
