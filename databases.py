@@ -48,8 +48,6 @@ MAX_DAYS = 365
 
 
 def make_intervals(start_date, end_date, max_days=MAX_DAYS):
-    start_date = datetime.datetime.strptime(start_date, '%d.%m.%Y')
-    end_date = datetime.datetime.strptime(end_date, '%d.%m.%Y')
     delta = end_date - start_date
     intervals = []
     if delta.days > max_days:
@@ -67,6 +65,7 @@ def make_intervals(start_date, end_date, max_days=MAX_DAYS):
 
 
 def load_weather_data(station_id, start_date, end_date):
+    # разбиваем данные на годовые отрезки, так как rp5.ru падает при запросе данных за большое кол-во лет
     intervals = make_intervals(start_date, end_date)
     for start, end in intervals:
         weather_data = get_weather(station_id, start, end)
