@@ -77,24 +77,23 @@
             </div>
         </nav>
         <form action="/calculate" method="POST">
-        <div class="container-fluid">
-        <div class="page-header">
-            <h5>Введите идентификатор метеостанции (WMO ID):</h5>
-            <input id="station_id" type="text" name="station_id" required />
+        <div class="page-header" style="margin-left: 15px;">
+            <h5>Введите идентификатор метеостанции:</h5>
+            <input type="text" placeholder="WMO ID" id="station_id" name="station_id" required />
         </div>
-        <div class="page-header">
+        <div class="page-header" style="margin-left: 15px;">
             <h5>Данные за период:</h5>
-            <p><label for="from">с&nbsp;</label>
-            <input type="text" id="from" name="from" required />
-            <label for="to">&nbsp;&nbsp;&nbsp;&nbsp;по&nbsp;</label>
-            <input type="text" id="to"   name="to" required /></p>
+            <label for="from"></label>
+            <input type="text" style="margin-left: -5px;" placeholder="с" id="from" name="from" required />
+            <label for="to"></label>
+            <input type="text" placeholder="по" id="to" name="to" required />
         </div>
-        <div class="page-header">
-            <h5>Введите повторяемость скорости ветра:</h5>
-            <p><input type="text" name="storm_recurrence" id="storm_recurrence" required /></p>
+        <div class="page-header" style="margin-left: 15px;">
+            <h5>Введите повторяемость скорости ветра, <i>лет:</i></h5>
+            <input type="number" placeholder="1.0" min="1" step="0.1" style="width: 150px"
+                   id="storm_recurrence" name="storm_recurrence" required />
         </div>
-        <input type="submit" class="btn btn-default" value="Рассчитать"/>
-        </div>
+        <input type="submit" style="margin-left: 15px;" class="btn btn-default" value="Рассчитать"/>
         </form>
     </body>
 </html>
