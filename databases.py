@@ -7,7 +7,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-from weather import get_weather
+from data_capture import get_weather
 
 engine = create_engine('sqlite:///wind.db')
 db_session = scoped_session(sessionmaker(bind=engine))
