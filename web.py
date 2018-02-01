@@ -35,7 +35,9 @@ def calculate():
     # TODO сделать проверку, чтобы всегда storm_recurrence > 0
     storm_recurrence = float(storm_recurrence)
 
-    velocity, result_direction_speed, image_buf = get_calculation_results(data, storm_recurrence, start_date, end_date)
+    velocity, result_direction_speed, image_buf, legend_decoding_dict = get_calculation_results(
+        data, storm_recurrence, start_date, end_date
+    )
     image_encoded = base64.b64encode(image_buf.getvalue()).decode('utf-8')
 
     return render_template(
@@ -45,7 +47,9 @@ def calculate():
         end_date=end_date,
         velocity_table=velocity,
         image=str(image_encoded),
-        result_direction_speed=result_direction_speed
+        result_direction_speed=result_direction_speed,
+        legend_decoding_dict=legend_decoding_dict,
+        storm_recurrence = storm_recurrence
     )
 
 

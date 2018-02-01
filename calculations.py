@@ -12,7 +12,6 @@ from constants import (
     STORM_DURATION, COEF, MINIMAL_TICK,
     MAXIMAL_TICK, TICKS_NUMBER, MINIMAL_X, MINIMAL_Y, MAXIMAL_Y, PER_CENT
 )
-from datetime import datetime
 
 
 def get_pivot_table(data):
@@ -111,8 +110,6 @@ def get_wind_speed(f_big, velocity_direction_table, column_name):
 # скорость ветра
 def calculate_speed(direction_recurrence_table, velocity_direction_table, storm_recurrence,
                     start_date, end_date, direction_list):
-    # start_date = datetime.strptime(start_date, '%d.%m.%Y')
-    # end_date = datetime.strptime(end_date, '%d.%m.%Y')
     # выбрал 2016 год, потому что он високосный и ему подойдёт любая дата
     start_date_without_year = start_date.replace(year=2016)
     end_date_without_year = end_date.replace(year=2016)
@@ -172,7 +169,7 @@ def get_picture(velocity_direction_table, direction_list):
     plt.savefig(buf, format='png', dpi=400)
     # plt.savefig('picture.png', format='png', dpi=400)
     buf.seek(0)
-    return buf
+    return buf, legend_decoding
 
 
 def get_calculation_results(data, storm_recurrence, start_date, end_date):
@@ -200,12 +197,12 @@ def get_calculation_results(data, storm_recurrence, start_date, end_date):
     # направлению (таблица 3.3)
     velocity_direction_table = get_table_3(velocity_direction_table)
     # делаю рисунок режимных функций ветра по каждому направлению (рисунок 1)
-    image_buf = get_picture(velocity_direction_table, direction_list)
+    image_buf, legend_decoding_dict = get_picture(velocity_direction_table, direction_list)
     # рассчитываю значение режимной функции для каждого направления ветра
     calculated_wind_speed = calculate_speed(direction_recurrence_table, velocity_direction_table,
                                             storm_recurrence, start_date, end_date, direction_list
                                             )
-    return velocity_direction_table, calculated_wind_speed, image_buf
+    return velocity_direction_table, calculated_wind_speed, image_buf, legend_decoding_dict
 
 
 if __name__ == '__main__':
