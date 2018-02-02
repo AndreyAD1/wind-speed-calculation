@@ -4,6 +4,8 @@
 
 from pandas import *
 import io
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy
@@ -60,27 +62,17 @@ def get_table_2(velocity_direction_table, direction_list):
 # делаю таблицу с продолжительностью каждой градации по каждому
 # направлению (таблица 3.3)
 def get_table_3(velocity_direction_table):
-    # добавить исключение
-    # рассчитываю количество строк в таблице
-    row_number = len(velocity_direction_table.iloc[:, 1])
-    # обнуляю самую нижнюю строку таблицы
-    # TODO fix scenario with row_number = 0
-    velocity_direction_table.iloc[row_number - 1] = 0
-    # TODO fix scenario with row_number = 0
-    row_index = row_number - 2
-    # делаю таблицу с продолжительностью каждой градации по каждому
-    # направлению (таблица 3.3)
-    while row_index != -1:
-        velocity_direction_table.iloc[row_index] += velocity_direction_table.iloc[row_index + 1]
-        row_index -= 1
-    # заменяю название строки All на значение скорости ветра, который не
-    # наблюдался
-    max_observed_wind_velocity = velocity_direction_table.index[row_number - 2]
-    # TODO variable with _2 in name is BAD, maybe you can just
-    # TODO velocity_direction_table.rename({'All': (max_observed_wind_velocity + 1)}, axis='index')
-    velocity_direction_table_2 = velocity_direction_table.rename(
-        {ALL: (max_observed_wind_velocity + 1)}, axis='index')
-    return velocity_direction_table_2
+    velocity_direction_table.loc['All'] = 0
+    max_observed_wind_velocity = velocity_direction_table.index[-2]
+    table_with_numerical_row_names = velocity_direction_table.rename(
+        {ALL: (max_observed_wind_velocity + 1)}, axis='index'
+    )
+    sorted_indexes = table_with_numerical_row_names.index.sort_values(return_indexer=False, ascending=False)
+    previous_index = sorted_indexes[0]
+    for index in sorted_indexes[1:]:
+        table_with_numerical_row_names.loc[index] += table_with_numerical_row_names.loc[previous_index]
+        previous_index = index
+    return table_with_numerical_row_names
 
 
 # вычисляю скорость ветра по значению режимной функции
@@ -154,7 +146,7 @@ def get_picture(velocity_direction_table, direction_list):
     for picture in [left_graphs, right_graphs]:
         # делаю вертикальную ось логарифмической c симметрией относительно 0,
         # при значениях ниже 1 рисуется прямая линия
-        picture.set_yscale('symlog', linthreshy=1)
+        picture.set_yscale('symlog', linthreshy=0.4)
         picture.set_yticks(y_labels)
         picture.yaxis.set_major_formatter(ticker.ScalarFormatter())
         picture.axis([MINIMAL_X, maximal_x, MAXIMAL_Y, MINIMAL_Y])
