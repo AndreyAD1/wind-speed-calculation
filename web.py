@@ -29,8 +29,8 @@ def calculate():
     load_weather_data(station_id, start_date, end_date)
 
     data = WindIndicator.query.filter(WindIndicator.weather_station_id == station_id,
-                                      WindIndicator.local_date < end_date,
-                                      WindIndicator.local_date > start_date).all()
+                                      WindIndicator.local_date <= end_date,
+                                      WindIndicator.local_date >= start_date).all()
 
     # TODO сделать проверку, чтобы всегда storm_recurrence > 0
     storm_recurrence = float(storm_recurrence)
