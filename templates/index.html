@@ -14,6 +14,8 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript" src="/static/js/jquery.ui.datepicker-ru.js"></script>
     <script src="/static/js/datepicker.js"></script>
+    <script src="/static/js/deactivate_checkboxes.js"></script>
+    <script src="/static/js/activate_checkboxes.js"></script>
 </head>
     <body>
         <nav class="navbar navbar-default">
@@ -35,45 +37,46 @@
             <label for="to"></label>
             <input type="text" placeholder="по" id="to" name="to" required />
         </div>
-        <label class="radio-inline" style="margin-left: 15px;"><input type="radio" name="optradio"
+        <label class="radio-inline all_days" style="margin-left: 15px;"><input type="radio" name="optradio"
                                                                       checked>Все дни</label>
-        <label class="radio-inline" style="margin-left: 15px;"><input type="radio" name="optradio">Месяц(ы)</label>
+        <label class="radio-inline month" style="margin-left: 15px;"><input type="radio" name="optradio">Месяц(ы)</label>
         <div class="checkbox">
-          <label><input type="checkbox" value="">Январь</label>
+          <label><input type="checkbox" disabled value="">Январь</label>
         </div>
         <div class="checkbox">
-          <label><input type="checkbox" value="">Февраль</label>
+          <label><input type="checkbox" disabled value="">Февраль</label>
         </div>
         <div class="checkbox">
-          <label><input type="checkbox" value="">Март</label>
+          <label><input type="checkbox" disabled value="">Март</label>
         </div>
         <div class="checkbox">
-          <label><input type="checkbox" value="">Апрель</label>
+          <label><input type="checkbox" disabled value="">Апрель</label>
         </div>
         <div class="checkbox">
-          <label><input type="checkbox" value="">Май</label>
+          <label><input type="checkbox" disabled value="">Май</label>
         </div>
         <div class="checkbox">
-          <label><input type="checkbox" value="">Июнь</label>
+          <label><input type="checkbox" disabled value="">Июнь</label>
         </div>
         <div class="checkbox">
-          <label><input type="checkbox" value="">Июль</label>
+          <label><input type="checkbox" disabled value="">Июль</label>
         </div>
         <div class="checkbox">
-          <label><input type="checkbox" value="">Август</label>
+          <label><input type="checkbox" disabled value="">Август</label>
         </div>
         <div class="checkbox">
-          <label><input type="checkbox" value="">Сентябрь</label>
+          <label><input type="checkbox" disabled value="">Сентябрь</label>
         </div>
         <div class="checkbox">
-          <label><input type="checkbox" value="">Октябрь</label>
+          <label><input type="checkbox" disabled value="">Октябрь</label>
         </div>
         <div class="checkbox">
-          <label><input type="checkbox" value="">Ноябрь</label>
+          <label><input type="checkbox" disabled value="">Ноябрь</label>
         </div>
         <div class="checkbox">
-          <label><input type="checkbox" value="">Декабрь</label>
+          <label><input type="checkbox" disabled value="">Декабрь</label>
         </div>
+
         <div class="page-header" style="margin-left: 15px;">
             <h5>Введите повторяемость скорости ветра, <i>лет:</i></h5>
             <input type="number" placeholder="1.0" min="1" step="0.1" style="width: 150px"
