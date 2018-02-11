@@ -1,10 +1,10 @@
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Flask, render_template, request
 from flask_bootstrap import Bootstrap
 
-from databases import load_weather_data, WindIndicator
+from databases import check_db, WindIndicator
 from calculations import get_calculation_results
 
 
@@ -25,16 +25,22 @@ def calculate():
     end_date = form['to']
     storm_recurrence = form['storm_recurrence']
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
+<<<<<<< HEAD
     end_date = datetime.strptime(end_date, '%d.%m.%Y')
     all_days_or_some_months = form['optradio']
     load_weather_data(station_id, start_date, end_date)
+=======
+    # включаем в запрос последний день в интервале
+    end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1)
+    # TODO сделать проверку, чтобы всегда storm_recurrence > 0
+    storm_recurrence = float(storm_recurrence)
+
+    check_db(station_id, start_date, end_date)
+>>>>>>> develop
 
     data = WindIndicator.query.filter(WindIndicator.weather_station_id == station_id,
                                       WindIndicator.local_date <= end_date,
                                       WindIndicator.local_date >= start_date).all()
-
-    # TODO сделать проверку, чтобы всегда storm_recurrence > 0
-    storm_recurrence = float(storm_recurrence)
 
     velocity, result_direction_speed, image_buf, legend_decoding_dict = get_calculation_results(
         data, storm_recurrence, start_date, end_date
@@ -45,12 +51,12 @@ def calculate():
         'calculate.html',
         station_id=station_id,
         start_date=start_date,
-        end_date=end_date,
+        end_date=end_date - timedelta(days=1),
         velocity_table=velocity,
         image=str(image_encoded),
         result_direction_speed=result_direction_speed,
         legend_decoding_dict=legend_decoding_dict,
-        storm_recurrence = storm_recurrence
+        storm_recurrence=storm_recurrence
     )
 
 
