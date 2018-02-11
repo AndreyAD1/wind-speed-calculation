@@ -26,6 +26,7 @@ def calculate():
     storm_recurrence = form['storm_recurrence']
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
     end_date = datetime.strptime(end_date, '%d.%m.%Y')
+    all_days_or_some_months = form['optradio']
     load_weather_data(station_id, start_date, end_date)
 
     data = WindIndicator.query.filter(WindIndicator.weather_station_id == station_id,
