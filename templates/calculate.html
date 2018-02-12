@@ -9,15 +9,13 @@
 </head>
     <body>
         <nav class="navbar navbar-default">
-            <div class="container-fluid">
             <div class="navbar-header">
                 <a class="navbar-brand" href="/">Wind speed calculation</a>
-            </div>
             </div>
         </nav>
 
         <p style="margin-left: 15px; line-height: 3; font-size: 16px;">
-            Расчет сделан для метеостанции с WMO ID {{ station_id }}
+            Расчет сделан для метеостанции с ID <b>{{ station_id }}</b>
             за период с {{ start_date.strftime('%d.%m.%Y')}} по {{ end_date.strftime('%d.%m.%Y') }}.
         </p>
 
