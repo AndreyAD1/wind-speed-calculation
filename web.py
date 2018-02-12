@@ -24,19 +24,16 @@ def calculate():
     start_date = form['from']
     end_date = form['to']
     storm_recurrence = form['storm_recurrence']
+    month_marker = form['optradio']
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
-<<<<<<< HEAD
-    end_date = datetime.strptime(end_date, '%d.%m.%Y')
-    all_days_or_some_months = form['optradio']
-    load_weather_data(station_id, start_date, end_date)
-=======
     # включаем в запрос последний день в интервале
     end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1)
+    print(month_marker)
+    print(form)
+
     # TODO сделать проверку, чтобы всегда storm_recurrence > 0
     storm_recurrence = float(storm_recurrence)
-
     check_db(station_id, start_date, end_date)
->>>>>>> develop
 
     data = WindIndicator.query.filter(WindIndicator.weather_station_id == station_id,
                                       WindIndicator.local_date <= end_date,
