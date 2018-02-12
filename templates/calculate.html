@@ -43,8 +43,8 @@
             {{ velocity_table.to_html(classes="table")|safe }}
         </div>
 
-        <h2 style="margin-left: 15px;">Расчётные скорости ветра по каждому румбу повторяемостью 1 раз в
-            {{ storm_recurrence }} лет, м/с</h2>
+        <h2 style="margin-left: 15px;">Расчётные скорости ветра по каждому румбу обеспеченностью
+            {{ storm_probability }}%, м/с</h2>
         <div style="margin-left: 15px;">
             <table class="table">
                 {% for key, value in result_direction_speed.items() %}

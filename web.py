@@ -23,16 +23,28 @@ def calculate():
     station_id = form['station_id']
     start_date = form['from']
     end_date = form['to']
-    storm_recurrence = form['storm_recurrence']
+    storm_probability = form['storm_recurrence']
     month_marker = form['optradio']
+    months = ['1','2','3','4',5,6,7,8,9,10,11,12]
+    selected_months = []
+    for month_number in months:
+        print(month_number)
+        try:
+            month_status = form[month_number]
+        except:
+            continue
+        selected_months.append(month_number)
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
     # включаем в запрос последний день в интервале
     end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1)
-    print(month_marker)
     print(form)
+    print(month_marker)
+    print(selected_months)
 
     # TODO сделать проверку, чтобы всегда storm_recurrence > 0
-    storm_recurrence = float(storm_recurrence)
+    # перехожу от обеспеченности в % к количеству лет
+    storm_recurrence = 100/float(storm_probability)
+
     check_db(station_id, start_date, end_date)
 
     data = WindIndicator.query.filter(WindIndicator.weather_station_id == station_id,
@@ -53,7 +65,7 @@ def calculate():
         image=str(image_encoded),
         result_direction_speed=result_direction_speed,
         legend_decoding_dict=legend_decoding_dict,
-        storm_recurrence=storm_recurrence
+        storm_probability=storm_probability
     )
 
 
