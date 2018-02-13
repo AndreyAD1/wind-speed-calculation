@@ -6,6 +6,7 @@ from flask_bootstrap import Bootstrap
 
 from databases import check_db, WindIndicator
 from calculations import get_calculation_results
+from constants import MONTH_LIST
 
 
 app = Flask(__name__)
@@ -24,11 +25,8 @@ def calculate():
     start_date = form['from']
     end_date = form['to']
     storm_probability = form['storm_recurrence']
-    month_marker = form['optradio']
-    months = ['1','2','3','4',5,6,7,8,9,10,11,12]
     selected_months = []
-    for month_number in months:
-        print(month_number)
+    for month_number in MONTH_LIST:
         try:
             month_status = form[month_number]
         except:
@@ -37,8 +35,6 @@ def calculate():
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
     # включаем в запрос последний день в интервале
     end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1)
-    print(form)
-    print(month_marker)
     print(selected_months)
 
     # TODO сделать проверку, чтобы всегда storm_recurrence > 0
@@ -46,7 +42,7 @@ def calculate():
     storm_recurrence = 100/float(storm_probability)
 
     check_db(station_id, start_date, end_date)
-
+# TODO надо добавить в фильтр нужные месяцы
     data = WindIndicator.query.filter(WindIndicator.weather_station_id == station_id,
                                       WindIndicator.local_date <= end_date,
                                       WindIndicator.local_date >= start_date).all()
