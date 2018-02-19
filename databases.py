@@ -1,3 +1,6 @@
+import json
+import gzip
+
 from datetime import datetime, timedelta
 
 from sqlalchemy import (
@@ -18,6 +21,7 @@ Base.query = db_session.query_property()
 class WeatherStation(Base):
     __tablename__ = 'weather_stations'
     id = Column(String(), primary_key=True)
+    name = Column(Text())
     winds = relationship('WindIndicator', backref='weather_station')
 
     def __repr__(self):
@@ -106,5 +110,15 @@ def create_db():
     Base.metadata.create_all(bind=engine)
 
 
+def load_wmo():
+    with open('wmo_filtered.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    for row in data:
+        station = WeatherStation(id=row['id'], name=row['name'])
+        db_session.add(station)
+    db_session.commit()
+
+
 if __name__ == "__main__":
     create_db()
+    load_wmo()
