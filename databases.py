@@ -111,7 +111,7 @@ def create_db():
 
 
 def load_wmo():
-    with gzip.open('wmo.json.gz') as f:
+    with open('wmo_filtered.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     for row in data:
         station = WeatherStation(id=row['id'], name=row['name'])
