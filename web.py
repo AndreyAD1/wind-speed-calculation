@@ -55,10 +55,8 @@ def calculate():
     if not selected_months:
         selected_months = MONTH_LIST_NUMBER
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
-    # включаем в запрос последний день в интервале
+    # включаю в запрос последний день в интервале
     end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1)
-
-    # TODO сделать проверку, чтобы всегда storm_probability > 0
     # перехожу от обеспеченности в % к количеству лет
     storm_recurrence = 100/float(storm_probability)
 
