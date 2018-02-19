@@ -6,7 +6,7 @@ from flask_bootstrap import Bootstrap
 
 from databases import check_db, WindIndicator, WeatherStation
 from calculations import get_calculation_results
-from constants import MONTH_LIST
+from constants import MONTH_LIST, MONTH_LIST_NUMBER
 from exceptions import RP5FormatError
 
 app = Flask(__name__)
@@ -46,31 +46,32 @@ def calculate():
     storm_probability = form['storm_recurrence']
     selected_months = []
     for month_number in MONTH_LIST:
+        # с помощью исключения составляю список выбранных месяцев
         try:
             month_status = form[month_number]
         except:
             continue
         selected_months.append(month_number)
+    if not selected_months:
+        selected_months = MONTH_LIST_NUMBER
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
     # включаем в запрос последний день в интервале
     end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1)
-    print(selected_months)
 
-    # TODO сделать проверку, чтобы всегда storm_recurrence > 0
+    # TODO сделать проверку, чтобы всегда storm_probability > 0
     # перехожу от обеспеченности в % к количеству лет
     storm_recurrence = 100/float(storm_probability)
 
-
-# TODO надо добавить в фильтр нужные месяцы
     try:
         check_db(station_id, start_date, end_date)
     except RP5FormatError:
         return render_template('RP5error.html', station_id=station_id)
-
-    data = WindIndicator.query.filter(WindIndicator.weather_station_id == station_id,
-                                      WindIndicator.local_date <= end_date,
-                                      WindIndicator.local_date >= start_date).all()
-
+    data = []
+    for month in selected_months:
+        data.extend(WindIndicator.query.filter(WindIndicator.weather_station_id == station_id,
+                                               WindIndicator.local_date <= end_date,
+                                               WindIndicator.local_date >= start_date,
+                                               WindIndicator.month == month).all())
     velocity, result_direction_speed, image_buf, legend_decoding_dict = get_calculation_results(
         data, storm_recurrence, start_date, end_date
     )
@@ -90,7 +91,8 @@ def calculate():
         image=str(image_encoded),
         result_direction_speed=result_direction_speed,
         legend_decoding_dict=legend_decoding_dict,
-        storm_probability=storm_probability
+        storm_probability=storm_probability,
+        selected_months=selected_months
     )
 
 

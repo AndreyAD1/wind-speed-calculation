@@ -38,13 +38,15 @@ class WindIndicator(Base):
         ForeignKey('weather_stations.id'),
         primary_key=True
     )
+    month = Column(Integer)
 
     def __repr__(self):
-        return '<{} {} {} {}>'.format(
+        return '<{} {} {} {} {}>'.format(
             self.weather_station_id,
             self.local_date,
             self.wind_speed,
-            self.wind_direction
+            self.wind_direction,
+            self.month
         )
 
 
@@ -91,6 +93,7 @@ def check_db(station_id, start_date, end_date):
             for row in weather_data:
                 local_date = datetime.strptime(
                     row['Localdate'], '%d.%m.%Y %H:%M')
+                local_month = local_date.month
                 if row['Ff'] == '' or row['DD'] == '':
                     continue
                 wind_speed = int(row['Ff'])
@@ -101,7 +104,8 @@ def check_db(station_id, start_date, end_date):
                         local_date=local_date,
                         wind_speed=wind_speed,
                         wind_direction=wind_direction,
-                        weather_station_id=station.id)
+                        weather_station_id=station.id,
+                        month=local_month)
                     db_session.add(wind)
             db_session.commit()
 
