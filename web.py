@@ -71,7 +71,7 @@ def calculate():
                                                WindIndicator.local_date >= start_date,
                                                WindIndicator.month == month).all())
     velocity, result_direction_speed, image_buf, legend_decoding_dict = get_calculation_results(
-        data, storm_recurrence, start_date, end_date
+        data, storm_recurrence, selected_months
     )
     image_encoded = base64.b64encode(image_buf.getvalue()).decode('utf-8')
 

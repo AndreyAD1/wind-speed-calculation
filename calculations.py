@@ -14,6 +14,7 @@ from constants import (
     STORM_DURATION, COEF, MINIMAL_TICK,
     MAXIMAL_TICK, TICKS_NUMBER, MINIMAL_X, MINIMAL_Y, MAXIMAL_Y, PER_CENT
 )
+import calendar
 
 
 def get_pivot_table(data):
@@ -101,15 +102,13 @@ def get_wind_speed(f_big, velocity_direction_table, column_name):
 # вычисляем значение режимной функции F по формуле (3.1) и рассчитываю
 # скорость ветра
 def calculate_speed(direction_recurrence_table, velocity_direction_table, storm_recurrence,
-                    start_date, end_date, direction_list):
-    # выбрал 2016 год, потому что он високосный и ему подойдёт любая дата
-    start_date_without_year = start_date.replace(year=2016)
-    end_date_without_year = end_date.replace(year=2016)
-    time_difference = end_date_without_year - start_date_without_year
-    days_number = 365
-    if time_difference.days > 0:
-        days_number = time_difference.days
-
+                    direction_list, selected_months):
+    days_number = 0
+    for month_number in selected_months:
+        month_number = int(month_number)
+        # выбрал 2017 год, потому что он невисокосный, чтобы days_number всегда было не более 365
+        days_in_month = calendar.monthrange(2017, month_number)
+        days_number += days_in_month[1]
     column_number = 0
     wind_speed_dict = {}
     for direction_recurrence in direction_recurrence_table.loc['All']:
@@ -145,7 +144,7 @@ def get_picture(velocity_direction_table, direction_list):
     maximal_x = velocity_axis.max()
     for picture in [left_graphs, right_graphs]:
         # делаю вертикальную ось логарифмической c симметрией относительно 0,
-        # при значениях ниже 1 рисуется прямая линия
+        # при значениях ниже 0.4 рисуется прямая линия
         picture.set_yscale('symlog', linthreshy=0.4)
         picture.set_yticks(y_labels)
         picture.yaxis.set_major_formatter(ticker.ScalarFormatter())
@@ -159,12 +158,11 @@ def get_picture(velocity_direction_table, direction_list):
 
     buf = io.BytesIO()
     plt.savefig(buf, format='png', dpi=400)
-    # plt.savefig('picture.png', format='png', dpi=400)
     buf.seek(0)
     return buf, legend_decoding
 
 
-def get_calculation_results(data, storm_recurrence, start_date, end_date):
+def get_calculation_results(data, storm_recurrence, selected_months):
     velocity_direction_table = get_pivot_table(data)
     observations_number = velocity_direction_table.loc[ALL, ALL]
     direction_list = []
@@ -192,7 +190,8 @@ def get_calculation_results(data, storm_recurrence, start_date, end_date):
     image_buf, legend_decoding_dict = get_picture(velocity_direction_table, direction_list)
     # рассчитываю значение режимной функции для каждого направления ветра
     calculated_wind_speed = calculate_speed(direction_recurrence_table, velocity_direction_table,
-                                            storm_recurrence, start_date, end_date, direction_list
+                                            storm_recurrence, direction_list,
+                                            selected_months
                                             )
     return velocity_direction_table, calculated_wind_speed, image_buf, legend_decoding_dict
 
