@@ -59,7 +59,6 @@ def calculate():
     end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1)
     # перехожу от обеспеченности в % к количеству лет
     storm_recurrence = 100/float(storm_probability)
-
     try:
         check_db(station_id, start_date, end_date)
     except RP5FormatError:
@@ -79,12 +78,17 @@ def calculate():
     if station is not None:
         if len(station.name) > 0:
             station_id = station.name
+    observation_dates = []
+    for observation in data:
+        observation_dates.append(observation.local_date)
+    earliest_date = min(observation_dates)
+    latest_date = max(observation_dates)
 
     return render_template(
         'calculate.html',
         station_id=station_id,
-        start_date=start_date,
-        end_date=end_date - timedelta(days=1),
+        start_date=earliest_date,
+        end_date=latest_date,
         velocity_table=velocity,
         image=str(image_encoded),
         result_direction_speed=result_direction_speed,

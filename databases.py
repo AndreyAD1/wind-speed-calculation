@@ -1,15 +1,11 @@
 import json
-import gzip
-
 from datetime import datetime, timedelta
-
 from sqlalchemy import (
     create_engine, Column, Integer, String, Text,
     DateTime, ForeignKey, func
 )
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-
 from data_capture import get_weather
 
 engine = create_engine('sqlite:///wind.db')
