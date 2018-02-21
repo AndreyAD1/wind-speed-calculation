@@ -9,16 +9,15 @@
 </head>
     <body>
         <nav class="navbar navbar-default">
-            <div class="container-fluid">
             <div class="navbar-header">
                 <a class="navbar-brand" href="/">Wind speed calculation</a>
-            </div>
             </div>
         </nav>
 
         <p style="margin-left: 15px; line-height: 3; font-size: 16px;">
-            Расчет сделан для метеостанции с WMO ID {{ station_id }}
-            за период с {{ start_date.strftime('%d.%m.%Y')}} по {{ end_date.strftime('%d.%m.%Y') }}.
+            Расчет сделан для метеостанции с ID <b>{{ station_id }}</b>
+            за период с {{ start_date.strftime('%d.%m.%Y')}} по {{ end_date.strftime('%d.%m.%Y') }}
+            за месяцы №{{ selected_months }}.
         </p>
 
         <h2 style="margin-left: 15px;">Режимные функции скорости ветра</h2>
@@ -43,8 +42,8 @@
             {{ velocity_table.to_html(classes="table")|safe }}
         </div>
 
-        <h2 style="margin-left: 15px;">Расчётные скорости ветра по каждому румбу повторяемостью 1 раз в
-            {{ storm_recurrence }} лет, м/с</h2>
+        <h2 style="margin-left: 15px;">Расчётные скорости ветра по каждому румбу обеспеченностью
+            {{ storm_probability }}%, м/с</h2>
         <div style="margin-left: 15px;">
             <table class="table">
                 {% for key, value in result_direction_speed.items() %}

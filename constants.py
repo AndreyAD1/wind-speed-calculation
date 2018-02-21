@@ -34,3 +34,5 @@ MINIMAL_X = 0
 MINIMAL_Y = 0.01
 MAXIMAL_Y = 60
 PER_CENT = 100
+MONTH_LIST = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+MONTH_LIST_NUMBER = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

@@ -1,12 +1,11 @@
-import datetime
-
+import json
+from datetime import datetime, timedelta
 from sqlalchemy import (
     create_engine, Column, Integer, String, Text,
-    DateTime, ForeignKey
+    DateTime, ForeignKey, func
 )
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-
 from data_capture import get_weather
 
 engine = create_engine('sqlite:///wind.db')
@@ -18,6 +17,7 @@ Base.query = db_session.query_property()
 class WeatherStation(Base):
     __tablename__ = 'weather_stations'
     id = Column(String(), primary_key=True)
+    name = Column(Text())
     winds = relationship('WindIndicator', backref='weather_station')
 
     def __repr__(self):
@@ -34,29 +34,31 @@ class WindIndicator(Base):
         ForeignKey('weather_stations.id'),
         primary_key=True
     )
+    month = Column(Integer)
 
     def __repr__(self):
-        return '<{} {} {} {}>'.format(
+        return '<{} {} {} {} {}>'.format(
             self.weather_station_id,
             self.local_date,
             self.wind_speed,
-            self.wind_direction
+            self.wind_direction,
+            self.month
         )
 
 
 MAX_DAYS = 365
 
 
-def make_intervals(start_date, end_date, max_days=MAX_DAYS):
+def _make_intervals(start_date, end_date, max_days=MAX_DAYS):
     delta = end_date - start_date
     intervals = []
     if delta.days > max_days:
         start = start_date
-        end = start + datetime.timedelta(days=max_days)
+        end = start + timedelta(days=max_days)
         while end < end_date:
             intervals.append((start, end))
             start = end
-            end = start + datetime.timedelta(days=max_days)
+            end = start + timedelta(days=max_days)
         if start < end_date:
             intervals.append((start, end_date))
     else:
@@ -64,36 +66,59 @@ def make_intervals(start_date, end_date, max_days=MAX_DAYS):
     return intervals
 
 
-def load_weather_data(station_id, start_date, end_date):
-    # разбиваем данные на годовые отрезки, так как rp5.ru падает при запросе данных за большое кол-во лет
-    intervals = make_intervals(start_date, end_date)
-    for start, end in intervals:
-        weather_data = get_weather(station_id, start, end)
+def check_db(station_id, start_date, end_date):
         station = WeatherStation.query.get(station_id)
-        if station is None:
+        if station is not None:
+            days_in_period = (end_date - start_date).days
+            days_in_db = WindIndicator.query.filter(
+                WindIndicator.weather_station_id == station_id,
+                WindIndicator.local_date <= end_date,
+                WindIndicator.local_date >= start_date
+            ).group_by(
+                func.strftime("%Y-%m-%d", WindIndicator.local_date)
+            ).count()
+            if days_in_period == days_in_db:
+                return
+        else:
             station = WeatherStation(id=station_id)
             db_session.add(station)
-        for row in weather_data:
-            local_date = datetime.datetime.strptime(
-                row['Localdate'], '%d.%m.%Y %H:%M')
-            if row['Ff'] == '' or row['DD'] == '':
-                continue
-            wind_speed = int(row['Ff'])
-            wind_direction = row['DD']
-            wind = WindIndicator.query.get((local_date, station.id))
-            if wind is None:
-                wind = WindIndicator(
-                    local_date=local_date,
-                    wind_speed=wind_speed,
-                    wind_direction=wind_direction,
-                    weather_station_id=station.id)
-                db_session.add(wind)
-        db_session.commit()
+
+        intervals = _make_intervals(start_date, end_date)
+        for start, end in intervals:
+            weather_data = get_weather(station_id, start, end)
+            for row in weather_data:
+                local_date = datetime.strptime(
+                    row['Localdate'], '%d.%m.%Y %H:%M')
+                local_month = local_date.month
+                if row['Ff'] == '' or row['DD'] == '':
+                    continue
+                wind_speed = int(row['Ff'])
+                wind_direction = row['DD']
+                wind = WindIndicator.query.get((local_date, station.id))
+                if wind is None:
+                    wind = WindIndicator(
+                        local_date=local_date,
+                        wind_speed=wind_speed,
+                        wind_direction=wind_direction,
+                        weather_station_id=station.id,
+                        month=local_month)
+                    db_session.add(wind)
+            db_session.commit()
 
 
 def create_db():
     Base.metadata.create_all(bind=engine)
 
 
+def load_wmo():
+    with open('wmo_filtered.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    for row in data:
+        station = WeatherStation(id=row['id'], name=row['name'])
+        db_session.add(station)
+    db_session.commit()
+
+
 if __name__ == "__main__":
     create_db()
+    load_wmo()
