@@ -46,11 +46,14 @@ class WindIndicator(Base):
         )
 
 
+# TODO объявление констант должно быть в константах
 MAX_DAYS = 365
 
 
+# TODO _get_intervals? функция же возвращает интервалы, а не инициализирует аттрибут объекта
 def _make_intervals(start_date, end_date, max_days=MAX_DAYS):
     delta = end_date - start_date
+    # TODO тут отлично подойдет генератор, тогда не нужно будет объявление списка и код станет чуть проще
     intervals = []
     if delta.days > max_days:
         start = start_date
@@ -66,8 +69,11 @@ def _make_intervals(start_date, end_date, max_days=MAX_DAYS):
     return intervals
 
 
+# TODO функция проверяет функционирование базы данных? :) Из названия вроде это следует
 def check_db(station_id, start_date, end_date):
+        # TODO ээээ, а почему тут ТАКОЙ отступ? :)
         station = WeatherStation.query.get(station_id)
+        # TODO if not station?
         if station is not None:
             days_in_period = (end_date - start_date).days
             days_in_db = WindIndicator.query.filter(
@@ -83,6 +89,7 @@ def check_db(station_id, start_date, end_date):
             station = WeatherStation(id=station_id)
             db_session.add(station)
 
+        # TODO for start, end in _make_intervals(start_date, end_date)?
         intervals = _make_intervals(start_date, end_date)
         for start, end in intervals:
             weather_data = get_weather(station_id, start, end)
@@ -110,6 +117,7 @@ def create_db():
     Base.metadata.create_all(bind=engine)
 
 
+# TODO что такое wmo?
 def load_wmo():
     with open('wmo_filtered.json', 'r', encoding='utf-8') as f:
         data = json.load(f)

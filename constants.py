@@ -1,6 +1,7 @@
+# TODO URL что? Не ясно что за урл
 URL = 'https://rp5.ru/responses/reFileSynop.php'
 
-
+# TODO HEADERS что? Не понятно что за заголовки
 HEADERS = {
     'Accept': 'text/html, */*; q=0.01',
     'Accept-Encoding': 'gzip, deflate, br',
@@ -34,5 +35,8 @@ MINIMAL_X = 0
 MINIMAL_Y = 0.01
 MAXIMAL_Y = 60
 PER_CENT = 100
+# TODO лучше не присваивать имена в шаблонох просто строкам 1, 2, 3, лучше уж january и т.д.
 MONTH_LIST = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+# TODO эти две константы подряд выглядят страшно, еще рекоммендую почитать про enum, возможно где-то
+# TODO здесь он придется в пору :)
 MONTH_LIST_NUMBER = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

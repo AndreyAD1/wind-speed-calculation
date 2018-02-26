@@ -162,6 +162,7 @@ def get_picture(velocity_direction_table, direction_list):
     return buf, legend_decoding
 
 
+# TODO get_calculations выглядит проще
 def get_calculation_results(data, storm_recurrence, selected_months):
     velocity_direction_table = get_pivot_table(data)
     observations_number = velocity_direction_table.loc[ALL, ALL]

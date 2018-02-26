@@ -5,12 +5,17 @@ import csv
 import gzip
 import datetime
 
+# TODO почему перед requests пустая строка?
 import requests
 
 from constants import URL, HEADERS, all_days, only_month
+# TODO если делать import * то трудно становится искать в больших файлах объявление переменных, функций,
+# TODO классов, приходится это учитывать и начинать разбираться, лучше явно объявить импорты,
+# TODO плюс одна из заповедей pep-8 гласит, что явное лучше не явного
 from exceptions import *
 
 
+# TODO _get_string_date? handle очень уж общее понятие
 def _handle_date(date):
     if isinstance(date, str):
         return date
@@ -20,7 +25,10 @@ def _handle_date(date):
         raise ValueError('Date must be datetime.date or str')
 
 
+# TODO слишком общее название функции, которая к тому-же что то возвращает, лучше что то вроде
+# TODO _get_какой-то_url?
 def _post(url, form_data):
+    # TODO этот комментарий что то поясняет, не ясное из следующей строки кода? :)
     # Запрос ссылки на датасет с заданными параметрами
     response = requests.post(url, data=form_data, headers=HEADERS)
     href = re.findall('http.*gz', response.text)
@@ -31,12 +39,15 @@ def _post(url, form_data):
     return url
 
 
+# TODO _get_decompressed_content?
 def _decompress(content):
     decompressed_data = gzip.decompress(content)
     byte_io = io.BytesIO(decompressed_data)
     string_io = codecs.iterdecode(byte_io, "utf-8")
+    # TODO этот комментарий что то пояснеяет?
     # filter comments
     filtered_io = [row for row in string_io if len(row) > 0 and row[0] != "#"]
+    # TODO зачем это здесь?
     # filtered_io = filter(lambda row: row[0] != '#', string_io)
     return filtered_io
 
