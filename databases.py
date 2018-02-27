@@ -86,25 +86,29 @@ def check_db(station_id, start_date, end_date):
         intervals = _make_intervals(start_date, end_date)
         for start, end in intervals:
             weather_data = get_weather(station_id, start, end)
-            for row in weather_data:
-                local_date = datetime.strptime(
-                    row['Localdate'], '%d.%m.%Y %H:%M')
-                local_month = local_date.month
-                if row['Ff'] == '' or row['DD'] == '':
-                    continue
-                wind_speed = int(row['Ff'])
-                wind_direction = row['DD']
-                wind = WindIndicator.query.get((local_date, station.id))
-                if wind is None:
-                    wind = WindIndicator(
-                        local_date=local_date,
-                        wind_speed=wind_speed,
-                        wind_direction=wind_direction,
-                        weather_station_id=station.id,
-                        month=local_month)
-                    db_session.add(wind)
-            db_session.commit()
+            try:
+                for row in weather_data:
+                    local_date = datetime.strptime(
+                        row['Localdate'], '%d.%m.%Y %H:%M')
+                    local_month = local_date.month
+                    if row['Ff'] == '' or row['DD'] == '':
+                        continue
+                    wind_speed = int(row['Ff'])
+                    wind_direction = row['DD']
+                    wind = WindIndicator.query.get((local_date, station.id))
+                    if wind is None:
+                        wind = WindIndicator(
+                            local_date=local_date,
+                            wind_speed=wind_speed,
+                            wind_direction=wind_direction,
+                            weather_station_id=station.id,
+                            month=local_month)
+                        db_session.add(wind)
 
+                db_session.commit()
+            except:
+                db_session.rollback()
+                raise
 
 def create_db():
     Base.metadata.create_all(bind=engine)
