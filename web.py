@@ -6,16 +6,20 @@ from flask_bootstrap import Bootstrap
 
 from databases import check_db, WindIndicator, WeatherStation
 from calculations import get_calculation_results
-from constants import MONTH_LIST, MONTH_LIST_NUMBER
 from exceptions import RP5FormatError
+from constants import MONTH_NAMES
 
 app = Flask(__name__)
 Bootstrap(app)
 
 
+def _get_month_name(month_num):
+    return MONTH_NAMES[month_num - 1]
+
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', month_names=MONTH_NAMES)
 
 
 @app.route('/suggest', methods=['GET'])
@@ -44,16 +48,9 @@ def calculate():
     start_date = form['from']
     end_date = form['to']
     storm_probability = form['storm_recurrence']
-    selected_months = []
-    for month_number in MONTH_LIST:
-        # с помощью исключения составляю список выбранных месяцев
-        try:
-            month_status = form[month_number]
-        except:
-            continue
-        selected_months.append(month_number)
-    if not selected_months:
-        selected_months = MONTH_LIST_NUMBER
+    selected_months = [int(month) for month in form.getlist('months')]
+    if len(selected_months) == 0:
+        selected_months = [i for i in range(1, 13)]
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
     end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1) - timedelta(microseconds=1)
     storm_recurrence = 100/float(storm_probability)
@@ -92,7 +89,8 @@ def calculate():
         result_direction_speed=result_direction_speed,
         legend_decoding_dict=legend_decoding_dict,
         storm_probability=storm_probability,
-        selected_months=selected_months
+        selected_months=selected_months,
+        month_names=MONTH_NAMES
     )
 
 
