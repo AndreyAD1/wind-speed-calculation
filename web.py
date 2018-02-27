@@ -59,10 +59,11 @@ def calculate():
     end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1)
     # перехожу от обеспеченности в % к количеству лет
     storm_recurrence = 100/float(storm_probability)
-    try:
-        check_db(station_id, start_date, end_date)
-    except RP5FormatError:
-        return render_template('RP5error.html', station_id=station_id)
+    check_db(station_id, start_date, end_date)
+    # try:
+    #     check_db(station_id, start_date, end_date)
+    # except RP5FormatError:
+    #     return render_template('RP5error.html', station_id=station_id)
     data = []
     for month in selected_months:
         data.extend(WindIndicator.query.filter(WindIndicator.weather_station_id == station_id,
