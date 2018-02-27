@@ -55,15 +55,12 @@ def calculate():
     if not selected_months:
         selected_months = MONTH_LIST_NUMBER
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
-    # включаю в запрос последний день в интервале
-    end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1)
-    # перехожу от обеспеченности в % к количеству лет
+    end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1) - timedelta(microseconds=1)
     storm_recurrence = 100/float(storm_probability)
-    check_db(station_id, start_date, end_date)
-    # try:
-    #     check_db(station_id, start_date, end_date)
-    # except RP5FormatError:
-    #     return render_template('RP5error.html', station_id=station_id)
+    try:
+        check_db(station_id, start_date, end_date)
+    except RP5FormatError:
+        return render_template('RP5error.html', station_id=station_id)
     data = []
     for month in selected_months:
         data.extend(WindIndicator.query.filter(WindIndicator.weather_station_id == station_id,

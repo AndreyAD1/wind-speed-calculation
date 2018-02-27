@@ -1,11 +1,13 @@
 import json
 from datetime import datetime, timedelta
+
 from sqlalchemy import (
     create_engine, Column, Integer, String, Text,
     DateTime, ForeignKey, func
 )
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
+
 from data_capture import get_weather
 
 engine = create_engine('sqlite:///wind.db')
@@ -67,48 +69,44 @@ def _make_intervals(start_date, end_date, max_days=MAX_DAYS):
 
 
 def check_db(station_id, start_date, end_date):
-        station = WeatherStation.query.get(station_id)
-        if station is not None:
-            days_in_period = (end_date - start_date).days
-            days_in_db = WindIndicator.query.filter(
-                WindIndicator.weather_station_id == station_id,
-                WindIndicator.local_date <= end_date,
-                WindIndicator.local_date >= start_date
-            ).group_by(
-                func.strftime("%Y-%m-%d", WindIndicator.local_date)
-            ).count()
-            if days_in_period == days_in_db:
-                return
-        else:
+    station = WeatherStation.query.get(station_id)
+    if station is not None:
+        days_in_period = (end_date - start_date).days + 1
+        days_in_db = WindIndicator.query.filter(
+            WindIndicator.weather_station_id == station_id,
+            WindIndicator.local_date <= end_date,
+            WindIndicator.local_date >= start_date
+        ).group_by(
+            func.strftime("%Y-%m-%d", WindIndicator.local_date)
+        ).count()
+        if days_in_period == days_in_db:
+            return
+
+    intervals = _make_intervals(start_date, end_date)
+    for start, end in intervals:
+        weather_data = get_weather(station_id, start, end)
+        if station is None:
             station = WeatherStation(id=station_id)
             db_session.add(station)
 
-        intervals = _make_intervals(start_date, end_date)
-        for start, end in intervals:
-            weather_data = get_weather(station_id, start, end)
-            try:
-                for row in weather_data:
-                    local_date = datetime.strptime(
-                        row['Localdate'], '%d.%m.%Y %H:%M')
-                    local_month = local_date.month
-                    if row['Ff'] == '' or row['DD'] == '':
-                        continue
-                    wind_speed = int(row['Ff'])
-                    wind_direction = row['DD']
-                    wind = WindIndicator.query.get((local_date, station.id))
-                    if wind is None:
-                        wind = WindIndicator(
-                            local_date=local_date,
-                            wind_speed=wind_speed,
-                            wind_direction=wind_direction,
-                            weather_station_id=station.id,
-                            month=local_month)
-                        db_session.add(wind)
-
-                db_session.commit()
-            except:
-                db_session.rollback()
-                raise
+        for row in weather_data:
+            local_date = datetime.strptime(
+                row['Localdate'], '%d.%m.%Y %H:%M')
+            local_month = local_date.month
+            if row['Ff'] == '' or row['DD'] == '':
+                continue
+            wind_speed = int(row['Ff'])
+            wind_direction = row['DD']
+            wind = WindIndicator.query.get((local_date, station.id))
+            if wind is None:
+                wind = WindIndicator(
+                    local_date=local_date,
+                    wind_speed=wind_speed,
+                    wind_direction=wind_direction,
+                    weather_station_id=station.id,
+                    month=local_month)
+                db_session.add(wind)
+        db_session.commit()
 
 def create_db():
     Base.metadata.create_all(bind=engine)
