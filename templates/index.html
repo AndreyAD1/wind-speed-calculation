@@ -27,7 +27,7 @@
 
         <form action="/calculate" method="POST">
             <div class="page-header" style="margin-left: 15px;">
-                <h5>Это приложение рассчитывает скорость ветра определённой вероятности превышения
+                <p>Это приложение рассчитывает скорость ветра определённой вероятности превышения
                     по каждому румбу.<br>
                     Расчёт проводится по методике, описанной в приложении 12.1
                     Пособия к СНиП 2.05.03-84 "Мосты и трубы" (ПМП-91),<br>
@@ -36,7 +36,7 @@
                     <a href="https://rp5.ru/">www.rp5.ru</a>.<br>
                     Исходный код программы находится
                     <a href="https://github.com/AndreyAD1/wind-speed-calculation">здесь</a>.
-                </h5>
+                </p>
             </div>
             <div class="page-header" style="margin-left: 15px;">
                  <h5>Введите идентификатор метеостанции:</h5>
@@ -51,55 +51,21 @@
                 <input type="text" placeholder="по" id="to" name="to" required />
             </div>
             <label class="radio-inline all_days" style="margin-left: 15px;">
-                                                            <input type="radio" name="optradio"
-                                                                   id="all_days" checked
-                                                                   value="all_days">Все дни</label>
+                <input type="radio" name="optradio" id="all_days" checked value="all_days">Все дни</label>
             <label class="radio-inline month" style="margin-left: 15px;">
-                                                            <input type="radio" name="optradio"
-                                                                   id="month" value="month">Месяц(ы)</label>
-            <div class="checkbox">
-              <label><input type="checkbox" disabled name="1">Январь</label>
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox" disabled name="2">Февраль</label>
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox" disabled name="3">Март</label>
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox" disabled name="4">Апрель</label>
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox" disabled name="5">Май</label>
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox" disabled name="6">Июнь</label>
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox" disabled name="7">Июль</label>
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox" disabled name="8">Август</label>
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox" disabled name="9">Сентябрь</label>
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox" disabled name="10">Октябрь</label>
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox" disabled name="11">Ноябрь</label>
-            </div>
-            <div class="checkbox">
-              <label><input type="checkbox" disabled name="12">Декабрь</label>
-            </div>
+                <input type="radio" name="optradio" id="month" value="month">Месяц(ы)</label>
+            {% for month_name in month_names %}
+                <div class="checkbox">
+                    <label><input type="checkbox" disabled name="months" value="{{ loop.index }}">{{ month_name }}</label>
+                </div>
+            {% endfor %}
 
             <div class="page-header" style="margin-left: 15px;">
                 <h5>Введите обеспеченность скорости ветра, <i>%:</i></h5>
                 <input type="number" placeholder="1.0" min="0.01" max="100" step="0.01" style="width: 150px"
                        id="storm_recurrence" name="storm_recurrence" required />
             </div>
-            <input type="submit" style="margin-left: 15px;" class="btn btn-default" value="Рассчитать"/>
+            <input type="submit" style="margin-left: 15px; margin-bottom: 50px;" class="btn btn-default" value="Рассчитать"/>
         </form>
 
     </body>

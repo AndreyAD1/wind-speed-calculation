@@ -8,7 +8,7 @@ import datetime
 import requests
 
 from constants import URL, HEADERS, all_days, only_month
-from exceptions import *
+from exceptions import RP5FormatError
 
 
 def _handle_date(date):
@@ -23,10 +23,7 @@ def _handle_date(date):
 def _post(url, form_data):
     # Запрос ссылки на датасет с заданными параметрами
     response = requests.post(url, data=form_data, headers=HEADERS)
-    print(url)
-    print(response)
     href = re.findall('http.*gz', response.text)
-    print(href)
     if len(href) == 0:
         raise RP5FormatError
     url = href[0].split('/')
