@@ -109,7 +109,7 @@ def check_db(station_id, start_date, end_date):
         try:
             db_session.commit()
         except Exception:
-            session.rollback()
+            db_session.rollback()
 
 def create_db():
     Base.metadata.create_all(bind=engine)
