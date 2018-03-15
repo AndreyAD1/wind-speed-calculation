@@ -8,10 +8,12 @@ from databases import check_db, WindIndicator, WeatherStation
 from calculations import get_calculation_results
 from exceptions import RP5FormatError
 from constants import MONTH_NAMES
+from raven import Client
+
+client = Client('https://12263b59727a4920ae39f0d71c604b28:8add82d97384475f93da020fc5d6d2db@sentry.io/304374')
 
 app = Flask(__name__)
 Bootstrap(app)
-
 
 def _get_month_name(month_num):
     return MONTH_NAMES[month_num - 1]
