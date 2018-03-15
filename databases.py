@@ -106,7 +106,10 @@ def check_db(station_id, start_date, end_date):
                     weather_station_id=station.id,
                     month=local_month)
                 db_session.add(wind)
-        db_session.commit()
+        try:
+            db_session.commit()
+        except Exception:
+            session.rollback()
 
 def create_db():
     Base.metadata.create_all(bind=engine)
