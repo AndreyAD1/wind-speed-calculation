@@ -55,12 +55,15 @@ def calculate():
             months_in_period = first_year_months.extend(second_year_months)
         if start_date.year > end_date.year:
             print('Start date is later than end date!')
-            return
+            month_error = True
+            return month_error
         for month in selected_months:
             if month in months_in_period:
-                return
-        print('month error')
-        return
+                month_error = False
+                return month_error
+        month_error = True
+        return month_error
+
 
     form = request.form
     station_id = form['station_id']
@@ -73,8 +76,10 @@ def calculate():
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
     end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1) - timedelta(microseconds=1)
     if (end_date - start_date).days < 366:
-        print(selected_months, start_date, end_date)
-        check_selected_months(selected_months, start_date, end_date)
+        selected_month_error = check_selected_months(selected_months, start_date, end_date)
+        if selected_month_error:
+            return render_template('selected_months_error.html')
+    # преобразую обеспеченность скорости ветра в её повторяемость
     storm_recurrence = 100/float(storm_probability)
     try:
         check_db(station_id, start_date, end_date)
