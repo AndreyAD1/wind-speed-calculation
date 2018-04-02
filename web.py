@@ -48,7 +48,7 @@ def suggest():
 def calculate():
     def check_selected_months(selected_months, start_date, end_date):
         if start_date.year == end_date.year:
-            months_in_period = list(range(start_date.month, end_date.month, 1))
+            months_in_period = list(range(start_date.month, end_date.month + 1, 1))
         if start_date.year < end_date.year:
             first_year_months = list(range(start_date.month, 13, 1))
             second_year_months = list(range(1, end_date.month + 1, 1))
