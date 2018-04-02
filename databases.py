@@ -84,6 +84,7 @@ def check_db(station_id, start_date, end_date):
 
     intervals = _make_intervals(start_date, end_date)
     for start, end in intervals:
+        print('Send request to rp5.ru')
         weather_data = get_weather(station_id, start, end)
         if station is None:
             station = WeatherStation(id=station_id)

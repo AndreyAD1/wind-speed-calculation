@@ -15,6 +15,7 @@ client = Client('https://12263b59727a4920ae39f0d71c604b28:8add82d97384475f93da02
 app = Flask(__name__)
 Bootstrap(app)
 
+
 def _get_month_name(month_num):
     return MONTH_NAMES[month_num - 1]
 
@@ -45,6 +46,22 @@ def suggest():
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
+    def check_selected_months(selected_months, start_date, end_date):
+        if start_date.year == end_date.year:
+            months_in_period = list(range(start_date.month, end_date.month, 1))
+        if start_date.year < end_date.year:
+            first_year_months = list(range(start_date.month, 13, 1))
+            second_year_months = list(range(1, end_date.month + 1, 1))
+            months_in_period = first_year_months.extend(second_year_months)
+        if start_date.year > end_date.year:
+            print('Start date is later than end date!')
+            return
+        for month in selected_months:
+            if month in months_in_period:
+                return
+        print('month error')
+        return
+
     form = request.form
     station_id = form['station_id']
     start_date = form['from']
@@ -55,6 +72,9 @@ def calculate():
         selected_months = [i for i in range(1, 13)]
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
     end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1) - timedelta(microseconds=1)
+    if (end_date - start_date).days < 366:
+        print(selected_months, start_date, end_date)
+        check_selected_months(selected_months, start_date, end_date)
     storm_recurrence = 100/float(storm_probability)
     try:
         check_db(station_id, start_date, end_date)
