@@ -1,14 +1,13 @@
 import json
 from datetime import datetime, timedelta
-
 from sqlalchemy import (
     create_engine, Column, Integer, String, Text,
     DateTime, ForeignKey, func
 )
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-
 from data_capture import get_weather
+from constants import MAX_DAYS
 
 engine = create_engine('sqlite:///wind.db')
 db_session = scoped_session(sessionmaker(bind=engine))
@@ -48,23 +47,35 @@ class WindIndicator(Base):
         )
 
 
-MAX_DAYS = 365
-
-
-def _make_intervals(start_date, end_date, max_days=MAX_DAYS):
+def _get_intervals(start_date, end_date, max_days=MAX_DAYS):
     delta = end_date - start_date
     intervals = []
+    def generator(start_date, end_date):
+        period_start = start_date
+        period_end = period_start + timedelta(days=max_days)
+        while period_end < end_date:
+            yield (period_start, period_end)
+            period_start = period_end
+            period_end = period_start + timedelta(days=max_days)
+        yield (period_start, end_date)
+
     if delta.days > max_days:
-        start = start_date
-        end = start + timedelta(days=max_days)
-        while end < end_date:
-            intervals.append((start, end))
-            start = end
-            end = start + timedelta(days=max_days)
-        if start < end_date:
-            intervals.append((start, end_date))
+        for period in generator(start_date, end_date):
+            intervals.append(period)
     else:
         intervals.append((start_date, end_date))
+
+    # if delta.days > max_days:
+    #     start = start_date
+    #     end = start + timedelta(days=max_days)
+    #     while end < end_date:
+    #         intervals.append((start, end))
+    #         start = end
+    #         end = start + timedelta(days=max_days)
+    #     if start < end_date:
+    #         intervals.append((start, end_date))
+    # else:
+    #     intervals.append((start_date, end_date))
     return intervals
 
 
@@ -82,7 +93,7 @@ def check_db(station_id, start_date, end_date):
         if days_in_period == days_in_db:
             return
 
-    intervals = _make_intervals(start_date, end_date)
+    intervals = _get_intervals(start_date, end_date)
     for start, end in intervals:
         print('Send request to rp5.ru')
         weather_data = get_weather(station_id, start, end)
