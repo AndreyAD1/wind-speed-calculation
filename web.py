@@ -46,35 +46,38 @@ def suggest():
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
-    def check_selected_months(selected_months, start_date, end_date):
-        if start_date.year == end_date.year:
-            months_in_period = list(range(start_date.month, end_date.month + 1, 1))
-        if start_date.year < end_date.year:
-            first_year_months = list(range(start_date.month, 13, 1))
-            second_year_months = list(range(1, end_date.month + 1, 1))
+    def check_selected_months(months, first_date, last_date):
+        month_error = True
+        if first_date.year == last_date.year:
+            months_in_period = list(range(first_date.month, last_date.month + 1, 1))
+        if first_date.year < last_date.year:
+            first_year_months = list(range(first_date.month, 13, 1))
+            second_year_months = list(range(1, last_date.month + 1, 1))
             months_in_period = first_year_months.extend(second_year_months)
-        if start_date.year > end_date.year:
+        if first_date.year > last_date.year:
             print('Start date is later than end date!')
-            month_error = True
             return month_error
-        for month in selected_months:
+        for month in months:
             if month in months_in_period:
                 month_error = False
                 return month_error
-        month_error = True
         return month_error
 
+    def get_user_input():
+        form = request.form
+        station_id = form['station_id']
+        start_date = form['from']
+        end_date = form['to']
+        storm_probability = form['storm_recurrence']
+        selected_months = [int(month) for month in form.getlist('months')]
+        if len(selected_months) == 0:
+            selected_months = [i for i in range(1, 13)]
+        return station_id, start_date, end_date, storm_probability, selected_months
 
-    form = request.form
-    station_id = form['station_id']
-    start_date = form['from']
-    end_date = form['to']
-    storm_probability = form['storm_recurrence']
-    selected_months = [int(month) for month in form.getlist('months')]
-    if len(selected_months) == 0:
-        selected_months = [i for i in range(1, 13)]
+    station_id, start_date, end_date, storm_probability, selected_months = get_user_input()
     start_date = datetime.strptime(start_date, '%d.%m.%Y')
     end_date = datetime.strptime(end_date, '%d.%m.%Y') + timedelta(days=1) - timedelta(microseconds=1)
+    # обрабатываю случай, если пользователь выбрал период меньше одного года
     if (end_date - start_date).days < 366:
         selected_month_error = check_selected_months(selected_months, start_date, end_date)
         if selected_month_error:
@@ -91,6 +94,7 @@ def calculate():
                                                WindIndicator.local_date <= end_date,
                                                WindIndicator.local_date >= start_date,
                                                WindIndicator.month == month).all())
+
     velocity, result_direction_speed, image_buf, legend_decoding_dict = get_calculation_results(
         data, storm_recurrence, selected_months
     )
@@ -98,7 +102,7 @@ def calculate():
 
     station = WeatherStation.query.get(station_id)
     if station is not None:
-        if len(station.name) > 0:
+        if station.name:
             station_id = station.name
     observation_dates = []
     for observation in data:
