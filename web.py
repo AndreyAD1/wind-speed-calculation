@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from flask import Flask, render_template, request, jsonify, abort
 from flask_bootstrap import Bootstrap
 
-from databases import check_db, WindIndicator, WeatherStation
+from databases import get_data, WindIndicator, WeatherStation
 from calculations import get_calculation_results
 from exceptions import RP5FormatError
 from constants import MONTH_NAMES
@@ -85,7 +85,7 @@ def calculate():
     # преобразую обеспеченность скорости ветра в её повторяемость
     storm_recurrence = 100/float(storm_probability)
     try:
-        check_db(station_id, start_date, end_date)
+        get_data(station_id, start_date, end_date)
     except RP5FormatError:
         return render_template('RP5error.html', station_id=station_id)
     data = []

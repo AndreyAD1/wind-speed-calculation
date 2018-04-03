@@ -4,14 +4,12 @@ import codecs
 import csv
 import gzip
 import datetime
-
 import requests
-
 from constants import URL, HEADERS, all_days, only_month
 from exceptions import RP5FormatError
 
 
-def _handle_date(date):
+def _get_string_date(date):
     if isinstance(date, str):
         return date
     elif isinstance(date, datetime.date):
@@ -20,8 +18,7 @@ def _handle_date(date):
         raise ValueError('Date must be datetime.date or str')
 
 
-def _post(url, form_data):
-    # Запрос ссылки на датасет с заданными параметрами
+def _get_data_url(url, form_data):
     response = requests.post(url, data=form_data, headers=HEADERS)
     href = re.findall('http.*gz', response.text)
     if len(href) == 0:
@@ -31,7 +28,7 @@ def _post(url, form_data):
     return url
 
 
-def _decompress(content):
+def _get_decompressed_content(content):
     decompressed_data = gzip.decompress(content)
     byte_io = io.BytesIO(decompressed_data)
     string_io = codecs.iterdecode(byte_io, "utf-8")
@@ -66,8 +63,8 @@ def get_weather(station_id, start_date, end_date, month=None):
     """
     form_data = {
         'wmo_id': station_id,
-        'a_date1': _handle_date(start_date),
-        'a_date2': _handle_date(end_date),
+        'a_date1': _get_string_date(start_date),
+        'a_date2': _get_string_date(end_date),
         'f_ed3': month,
         'f_pe': report_type,
         'f_pe1': '2',
@@ -75,12 +72,12 @@ def get_weather(station_id, start_date, end_date, month=None):
     }
 
     # Запрос ссылки на датасет с заданными параметрами
-    url = _post(URL, form_data)
+    url = _get_data_url(URL, form_data)
 
     # Загрузка датасета по ссылке
     response = requests.get(url)
 
-    filtered_io = _decompress(response.content)
+    filtered_io = _get_decompressed_content(response.content)
 
     # Чтение CSV-файла и формирование результата
     reader = csv.DictReader(filtered_io, delimiter=';', quotechar='"')

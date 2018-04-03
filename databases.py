@@ -57,7 +57,7 @@ def _get_intervals(start_date, end_date):
     yield (period_start, end_date)
 
 
-def check_db(station_id, start_date, end_date):
+def get_data(station_id, start_date, end_date):
     station = WeatherStation.query.get(station_id)
     if station is not None:
         days_in_period = (end_date - start_date).days + 1
